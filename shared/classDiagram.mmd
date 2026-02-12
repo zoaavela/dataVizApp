@@ -1,0 +1,57 @@
+classDiagram
+    class User {
+        -id: Integer
+        -identifiant: String
+        -motDePasse: String
+        -nom: String
+        -prenom: String
+        +getNomComplet(): String
+        +verifierPassword(pwd: String): Boolean
+    }
+
+    class DatabaseConnector {
+        -connectionString: String
+        +fetchData(query: String): List~RawData~
+        +authenticate(id: String, mdp: String): User
+    }
+
+    class DataProcessor {
+        -rawData: List~RawData~
+        +toNumeric(value: String): Float
+        +sortByField(field: String, asc: Boolean): List
+        +getTopN(n: Integer): List
+    }
+
+    class DashboardManager {
+        -currentUser: User
+        -activeModules: List~ChartModule~
+        +initDashboard(user: User): void
+        +logout(): void
+    }
+
+    class ChartModule {
+        <<abstract>>
+        -chartInstance: Chart
+        -canvasId: String
+        +render(data: List): void
+        +update(newData: List): void
+    }
+
+    class AttractivityModule { +render(data): void }
+    class HousingTensionModule { +render(data): void }
+    class SocialRadarModule { +render(data): void }
+    class UrbanDensityModule { +render(data): void }
+    class EnergySocialModule { +render(data): void }
+
+    %% Relations
+    DashboardManager "1" o-- "1" User : est connecté
+    DashboardManager "1" *-- "5" ChartModule : gère
+    DashboardManager ..> DatabaseConnector : sollicite
+    
+    ChartModule <|-- AttractivityModule
+    ChartModule <|-- HousingTensionModule
+    ChartModule <|-- SocialRadarModule
+    ChartModule <|-- UrbanDensityModule
+    ChartModule <|-- EnergySocialModule
+
+    DataProcessor o-- DatabaseConnector : traite la data
