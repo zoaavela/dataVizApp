@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiki Technique - Data Viz Project</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <link href="https://fonts.cdnfonts.com/css/sf-pro-display" rel="stylesheet">
+
+    <style>
+        /* Application de la police SF Pro partout */
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f5f5f7;
+            /* Gris très léger style Apple */
+        }
+
+        /* Style Markdown épuré */
+        .prose h1 {
+            font-size: 2.2em;
+            font-weight: 700;
+            margin-bottom: 0.6em;
+            color: #1d1d1f;
+            letter-spacing: -0.02em;
+        }
+
+        .prose h2 {
+            font-size: 1.6em;
+            font-weight: 600;
+            margin-top: 1.4em;
+            margin-bottom: 0.6em;
+            color: #1d1d1f;
+        }
+
+        .prose h3 {
+            font-size: 1.25em;
+            font-weight: 600;
+            margin-top: 1.2em;
+            color: #424245;
+        }
+
+        .prose p {
+            margin-bottom: 1.2em;
+            line-height: 1.6;
+            color: #424245;
+            font-size: 1.05em;
+        }
+
+        .prose ul {
+            list-style-type: disc;
+            padding-left: 1.5em;
+            margin-bottom: 1em;
+            color: #424245;
+        }
+
+        .prose strong {
+            color: #1d1d1f;
+            font-weight: 600;
+        }
+
+        /* Tableaux style "Apple Numbers" */
+        .prose table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1.5em;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .prose th {
+            background-color: #f5f5f7;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75em;
+            letter-spacing: 0.05em;
+            padding: 12px 16px;
+            border-bottom: 1px solid #d2d2d7;
+            color: #86868b;
+            text-align: left;
+        }
+
+        .prose td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e5e5ea;
+            background: white;
+            font-size: 0.95em;
+        }
+
+        .prose tr:last-child td {
+            border-bottom: none;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        /* Backdrop blur for mobile menu */
+        .glass-backdrop {
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        /* Ensure inputs don't zoom on iOS */
+        @media screen and (max-width: 768px) {
+
+            input,
+            textarea,
+            select {
+                font-size: 16px !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="h-screen flex flex-col md:flex-row overflow-hidden text-[#1d1d1f]">
+
+    <div id="login-layer" class="fixed inset-0 bg-[#f5f5f7] z-50 flex items-center justify-center p-4">
+        <div class="bg-white p-6 md:p-10 rounded-2xl shadow-xl w-full max-w-[400px] text-center border border-gray-100">
+
+            <div class="flex justify-center mb-6 md:mb-8">
+                <img src="assets/logo1.png" alt="Logo" class="h-12 md:h-16 object-contain">
+            </div>
+
+            <h1 class="text-xl md:text-2xl font-semibold mb-2">Wiki Data Viz</h1>
+            <p class="text-[15px] text-gray-500 mb-6 md:mb-8 font-normal">Authentification requise</p>
+
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="text-xs font-semibold text-gray-500 uppercase ml-1">Identifiant</label>
+                    <input type="text" id="login-id"
+                        class="w-full px-4 py-3 mt-1 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition"
+                        placeholder="ex: user01">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-gray-500 uppercase ml-1">Mot de passe</label>
+                    <input type="password" id="login-pwd"
+                        class="w-full px-4 py-3 mt-1 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition"
+                        placeholder="••••••••">
+                </div>
+                <button onclick="handleLogin()"
+                    class="w-full bg-[#0071e3] hover:bg-[#0077ED] text-white font-medium py-3.5 rounded-xl transition shadow-md hover:shadow-lg mt-2">
+                    Se connecter
+                </button>
+            </div>
+            <p id="error-msg" class="text-red-500 text-sm mt-6 hidden bg-red-50 py-2 rounded-lg">Identifiants
+                incorrects.</p>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="app-layer" class="hidden flex-1 flex flex-col md:flex-row h-full relative w-full">
+
+        <!-- Mobile Header Bar -->
+        <div class="md:hidden h-14 bg-[#1e1e1e] flex items-center justify-between px-4 z-40 flex-shrink-0 shadow-md">
+            <div class="flex items-center">
+                <button onclick="toggleMobileMenu()" class="text-gray-300 p-1 mr-2 focus:outline-none focus:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+                <span class="text-white font-semibold text-sm tracking-wide">Data Viz Wiki</span>
+            </div>
+            <div id="user-badge-mobile"
+                class="text-[10px] font-medium bg-gray-800 px-2 py-1 rounded-full text-gray-300 border border-gray-700">
+                User
+            </div>
+        </div>
+
+        <!-- Sidebar Backdrop (Mobile) -->
+        <div id="sidebar-backdrop" onclick="toggleMobileMenu()"
+            class="fixed inset-0 bg-black/40 z-40 hidden md:hidden glass-backdrop transition-opacity duration-300">
+        </div>
+
+        <!-- Sidebar -->
+        <aside id="sidebar"
+            class="fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 w-[280px] bg-[#1e1e1e] text-white flex flex-col shadow-2xl z-50 transition-transform duration-300 ease-in-out h-full border-r border-gray-800">
+
+            <!-- Logo Desktop -->
+            <div class="p-8 border-b border-gray-800 flex flex-col items-center hidden md:flex">
+                <img src="assets/logo2.png" class="h-10 object-contain mb-4 opacity-90">
+                <div id="user-badge"
+                    class="text-[11px] font-medium bg-gray-800 px-3 py-1 rounded-full text-gray-300 tracking-wide border border-gray-700">
+                    Non connecté
+                </div>
+            </div>
+
+            <!-- Header Sidebar Mobile -->
+            <div class="md:hidden p-4 border-b border-gray-800 flex justify-between items-center bg-[#1e1e1e]">
+                <span class="text-sm font-bold text-gray-400 uppercase tracking-wider">Navigation</span>
+                <button onclick="toggleMobileMenu()" class="text-gray-400 hover:text-white focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto p-4 space-y-1">
+                <button onclick="loadPage('intro')"
+                    class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-800 transition flex items-center gap-3 text-[14px] font-medium text-gray-200">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                        </path>
+                    </svg>
+                    Accueil
+                </button>
+
+                <div class="pt-6 pb-3 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Modules
+                </div>
+
+                <button onclick="loadPage('m1')"
+                    class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-gray-800 transition text-[14px] text-gray-400 hover:text-white border-l-2 border-transparent hover:border-blue-500 ml-1">
+                    Attractivité</button>
+                <button onclick="loadPage('m2')"
+                    class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-gray-800 transition text-[14px] text-gray-400 hover:text-white border-l-2 border-transparent hover:border-blue-500 ml-1">
+                    Tension Immo</button>
+                <button onclick="loadPage('m3')"
+                    class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-gray-800 transition text-[14px] text-gray-400 hover:text-white border-l-2 border-transparent hover:border-blue-500 ml-1">
+                    Radar Social</button>
+                <button onclick="loadPage('m4')"
+                    class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-gray-800 transition text-[14px] text-gray-400 hover:text-white border-l-2 border-transparent hover:border-blue-500 ml-1">
+                    Urbanisation</button>
+                <button onclick="loadPage('m5')"
+                    class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-gray-800 transition text-[14px] text-gray-400 hover:text-white border-l-2 border-transparent hover:border-blue-500 ml-1">
+                    Énergie</button>
+
+                <div class="pt-6 pb-3 px-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Ressources
+                </div>
+                <button onclick="loadPage('bdd')"
+                    class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-gray-800 transition text-[14px] text-gray-400 hover:text-yellow-400 flex items-center gap-2 ml-1">
+                    Dictionnaire Données
+                </button>
+            </nav>
+
+            <div class="p-6 border-t border-gray-800 mb-safe md:mb-0">
+                <button onclick="location.reload()"
+                    class="w-full py-2 text-[13px] text-gray-500 hover:text-white transition font-medium">
+                    Se déconnecter
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col bg-white h-full relative z-10 overflow-hidden w-full">
+
+            <!-- Wiki Toolbar Header -->
+            <header id="wiki-header"
+                class="h-14 md:h-20 border-b border-gray-100 flex items-center justify-between px-4 md:px-10 bg-white/80 backdrop-blur-md sticky top-0 z-30 transition-all hidden flex-shrink-0">
+                <div class="flex-1 min-w-0 pr-2">
+                    <h1 id="page-title-display"
+                        class="text-sm md:text-2xl font-bold text-[#1d1d1f] tracking-tight truncate leading-tight">
+                        Chargement...
+                    </h1>
+                    <p id="last-update"
+                        class="text-[10px] md:text-xs text-gray-400 mt-0.5 md:mt-1 font-medium truncate"></p>
+                </div>
+                <div class="flex-shrink-0 flex items-center">
+                    <button id="btn-edit" onclick="toggleEditMode()"
+                        class="bg-gray-100 hover:bg-gray-200 text-[#1d1d1f] px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-semibold transition flex items-center gap-2 shadow-sm border border-gray-200">
+                        <svg class="w-3 h-3 md:w-4 md:h-4 text-gray-600 hidden md:block" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
+                            </path>
+                        </svg>
+                        Éditer
+                    </button>
+                    <!-- Edit Actions -->
+                    <div class="flex items-center gap-2">
+                        <button id="btn-save" onclick="saveContent()"
+                            class="hidden bg-[#0071e3] hover:bg-[#0077ED] text-white px-3 py-1.5 md:px-5 md:py-2.5 rounded-full text-xs md:text-sm font-semibold transition shadow-md whitespace-nowrap">
+                            Enregistrer
+                        </button>
+                        <button id="btn-cancel" onclick="cancelEdit()"
+                            class="hidden text-gray-500 hover:text-red-500 px-2 py-1.5 md:px-4 md:py-2 text-xs md:text-sm font-medium transition whitespace-nowrap">
+                            Annuler
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- DASHBOARD HOME -->
+            <div id="home-dashboard" class="flex-1 overflow-y-auto px-4 md:px-10 py-8 md:py-12 bg-gray-50/50">
+                <div class="max-w-6xl mx-auto">
+                    <div class="text-center mb-10 md:mb-16 pt-2 md:pt-8">
+                        <h2 class="text-2xl md:text-4xl font-bold text-[#1d1d1f] mb-3 tracking-tight">Data Visualisation
+                            Wiki</h2>
+                        <p class="text-sm md:text-xl text-gray-500 max-w-2xl mx-auto font-light leading-relaxed">
+                            Documentation technique centralisée des 5 modules de visualisation. <br>
+                            <span class="text-xs md:text-sm text-gray-400 mt-2 block">Version 1.0</span>
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-8 pb-20">
+                        <!-- M1 -->
+                        <div onclick="loadPage('m1')"
+                            class="bg-white p-6 md:p-8 rounded-3xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-xl transition-all duration-300 cursor-pointer group border border-gray-100 hover:-translate-y-1 relative overflow-hidden">
+                            <div
+                                class="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-8 -mt-8 opacity-50 group-hover:scale-110 transition-transform">
+                            </div>
+                            <div
+                                class="w-12 h-12 md:w-14 md:h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-4 md:mb-6 relative z-10 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-blue-100">
+                                <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                </svg>
+                            </div>
+                            <h3
+                                class="text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3 group-hover:text-blue-600 transition-colors">
+                                Attractivité</h3>
+                            <p class="text-gray-500 leading-relaxed text-sm">
+                                Analyse des flux démographiques : variation sur 10 ans, solde naturel et solde
+                                migratoire.
+                            </p>
+                        </div>
+
+                        <!-- M2 -->
+                        <div onclick="loadPage('m2')"
+                            class="bg-white p-6 md:p-8 rounded-3xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-xl transition-all duration-300 cursor-pointer group border border-gray-100 hover:-translate-y-1 relative overflow-hidden">
+                            <div
+                                class="absolute top-0 right-0 w-24 h-24 bg-green-50 rounded-bl-full -mr-8 -mt-8 opacity-50 group-hover:scale-110 transition-transform">
+                            </div>
+                            <div
+                                class="w-12 h-12 md:w-14 md:h-14 bg-green-50 rounded-2xl flex items-center justify-center text-green-600 mb-4 md:mb-6 relative z-10 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-green-100">
+                                <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3
+                                class="text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3 group-hover:text-green-600 transition-colors">
+                                Tension Immo</h3>
+                            <p class="text-gray-500 leading-relaxed text-sm">
+                                Identification des zones tendues via le croisement : Vacance / Logement Social /
+                                Densité.
+                            </p>
+                        </div>
+
+                        <!-- M3 -->
+                        <div onclick="loadPage('m3')"
+                            class="bg-white p-6 md:p-8 rounded-3xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-xl transition-all duration-300 cursor-pointer group border border-gray-100 hover:-translate-y-1 relative overflow-hidden">
+                            <div
+                                class="absolute top-0 right-0 w-24 h-24 bg-yellow-50 rounded-bl-full -mr-8 -mt-8 opacity-50 group-hover:scale-110 transition-transform">
+                            </div>
+                            <div
+                                class="w-12 h-12 md:w-14 md:h-14 bg-yellow-50 rounded-2xl flex items-center justify-center text-yellow-600 mb-4 md:mb-6 relative z-10 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-yellow-100">
+                                <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+                                </svg>
+                            </div>
+                            <h3
+                                class="text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3 group-hover:text-yellow-600 transition-colors">
+                                Radar Social</h3>
+                            <p class="text-gray-500 leading-relaxed text-sm">
+                                Radar comparatif pour analyser la fragilité sociale (Chômage, Pauvreté) entre
+                                territoires.
+                            </p>
+                        </div>
+
+                        <!-- M4 -->
+                        <div onclick="loadPage('m4')"
+                            class="bg-white p-6 md:p-8 rounded-3xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-xl transition-all duration-300 cursor-pointer group border border-gray-100 hover:-translate-y-1 relative overflow-hidden">
+                            <div
+                                class="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-bl-full -mr-8 -mt-8 opacity-50 group-hover:scale-110 transition-transform">
+                            </div>
+                            <div
+                                class="w-12 h-12 md:w-14 md:h-14 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 mb-4 md:mb-6 relative z-10 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-purple-100">
+                                <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3
+                                class="text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3 group-hover:text-purple-600 transition-colors">
+                                Urbanisation</h3>
+                            <p class="text-gray-500 leading-relaxed text-sm">
+                                Étude de la structure de l'habitat (Individuel vs Densité) sur une visualisation mixte.
+                            </p>
+                        </div>
+
+                        <!-- M5 -->
+                        <div onclick="loadPage('m5')"
+                            class="bg-white p-6 md:p-8 rounded-3xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-xl transition-all duration-300 cursor-pointer group border border-gray-100 hover:-translate-y-1 relative overflow-hidden">
+                            <div
+                                class="absolute top-0 right-0 w-24 h-24 bg-red-50 rounded-bl-full -mr-8 -mt-8 opacity-50 group-hover:scale-110 transition-transform">
+                            </div>
+                            <div
+                                class="w-12 h-12 md:w-14 md:h-14 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 mb-4 md:mb-6 relative z-10 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-red-100">
+                                <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                            </div>
+                            <h3
+                                class="text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3 group-hover:text-red-600 transition-colors">
+                                Performance Énergétique</h3>
+                            <p class="text-gray-500 leading-relaxed text-sm">
+                                Analyse du parc social énergivore (DPE E, F, G) sous forme de graphique polaire.
+                            </p>
+                        </div>
+
+                        <!-- BDD -->
+                        <div onclick="loadPage('bdd')"
+                            class="bg-white p-6 md:p-8 rounded-3xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:shadow-xl transition-all duration-300 cursor-pointer group border border-gray-100 hover:-translate-y-1 md:col-span-2 lg:col-span-1 relative overflow-hidden">
+                            <div
+                                class="absolute top-0 right-0 w-24 h-24 bg-gray-50 rounded-bl-full -mr-8 -mt-8 opacity-50 group-hover:scale-110 transition-transform">
+                            </div>
+                            <div
+                                class="w-12 h-12 md:w-14 md:h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-600 mb-4 md:mb-6 relative z-10 group-hover:scale-110 transition-transform duration-300 shadow-sm border border-gray-100">
+                                <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h3
+                                class="text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3 group-hover:text-gray-700 transition-colors">
+                                Dictionnaire</h3>
+                            <p class="text-gray-500 leading-relaxed text-sm">
+                                Référentiel complet des indicateurs statistiques.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <footer class="text-center text-gray-400 text-sm pb-10">
+                        © 2026 DataObserver Project. Tous droits réservés.
+                    </footer>
+                </div>
+            </div>
+
+            <!-- View Mode (Markdown) -->
+            <div id="view-mode" class="hidden flex-1 overflow-y-auto px-4 md:px-10 py-6 md:py-8">
+                <div id="markdown-render" class="prose max-w-5xl mx-auto pb-20">
+                </div>
+            </div>
+
+            <!-- Edit Mode -->
+            <div id="edit-mode"
+                class="hidden absolute inset-0 bg-white z-50 flex flex-col animate-fade-in w-full h-full">
+                <div
+                    class="h-14 md:h-16 border-b flex items-center justify-between px-4 md:px-8 bg-[#f5f5f7] flex-shrink-0">
+                    <span class="font-semibold text-gray-600 text-sm uppercase tracking-wide">Mode Édition</span>
+                    <div class="space-x-2 md:space-x-3">
+                        <button onclick="cancelEdit()"
+                            class="text-gray-500 hover:text-gray-900 px-3 py-1.5 md:px-4 md:py-2 font-medium text-xs md:text-sm transition">Annuler</button>
+                        <button onclick="saveContent()"
+                            class="bg-[#0071e3] hover:bg-[#0077ED] text-white px-4 py-1.5 md:px-6 md:py-2 rounded-full font-medium text-xs md:text-sm shadow-md transition transform active:scale-95">Publier</button>
+                    </div>
+                </div>
+                <div class="flex-1 flex overflow-hidden">
+                    <textarea id="editor-textarea"
+                        class="flex-1 p-4 md:p-10 border-none font-mono text-sm md:text-[14px] leading-relaxed resize-none focus:ring-0 outline-none text-gray-700 bg-white custom-scrollbar w-full"
+                        placeholder="# Commencez à rédiger..."></textarea>
+
+                    <div class="w-72 bg-gray-50 border-l border-gray-200 p-6 hidden xl:block overflow-y-auto">
+                        <h4 class="font-bold text-gray-900 mb-4 text-sm">Aide Markdown</h4>
+                        <div class="space-y-3 text-xs text-gray-600">
+                            <div class="p-3 bg-white rounded border border-gray-200 shadow-sm">
+                                <code class="text-blue-600 font-bold block mb-1"># Grand Titre</code>
+                                <span class="text-gray-400">Pour les sections principales</span>
+                            </div>
+                            <div class="p-3 bg-white rounded border border-gray-200 shadow-sm">
+                                <code class="text-blue-600 font-bold block mb-1">**Texte en gras**</code>
+                                <span class="text-gray-400">Pour mettre l'emphase</span>
+                            </div>
+                            <div class="p-3 bg-white rounded border border-gray-200 shadow-sm">
+                                <code class="text-blue-600 font-bold block mb-1">- Élément liste</code>
+                                <span class="text-gray-400">Pour les énumérations</span>
+                            </div>
+                            <div class="p-3 bg-white rounded border border-gray-200 shadow-sm">
+                                <code class="text-blue-600 font-bold block mb-1">| Table |</code>
+                                <span class="text-gray-400">Support des tableaux</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const SUPABASE_URL = 'https://ucpoixycgkgrhtnpwjdp.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_3H9HowWpFdsT52QWkkS4_g_uOopDCyO';
+
+        let sbClient;
+
+        try {
+            sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } catch (err) {
+            console.error("ERREUR CRITIQUE : Impossible d'initier Supabase.", err);
+        }
+
+        let CURRENT_USER = null;
+        let CURRENT_SLUG = 'intro';
+
+        // --- MOBILE NAV ---
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+
+            if (sidebar.classList.contains('-translate-x-full')) {
+                // Open menu
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+            } else {
+                // Close menu
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+            }
+        }
+
+        // --- LOGIN ---
+        async function handleLogin() {
+            const id = document.getElementById('login-id').value;
+            const pwd = document.getElementById('login-pwd').value;
+
+            // Démo rapide si Supabase fail ou pour test
+            if (id && pwd) {
+                CURRENT_USER = { identifiant: id };
+                finishLogin(CURRENT_USER);
+                return;
+            }
+
+            /*
+            try {
+                const { data, error } = await sbClient
+                    .from('profiles')
+                    .select('*')
+                    .eq('identifiant', id)
+                    .eq('mdp', pwd)
+                    .single();
+
+                if (data) {
+                    finishLogin(data);
+                } else {
+                    document.getElementById('error-msg').classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error("Erreur login", err);
+            }
+            */
+        }
+
+        function finishLogin(user) {
+            document.getElementById('login-layer').classList.add('hidden');
+            document.getElementById('app-layer').classList.remove('hidden');
+            document.getElementById('user-badge').innerText = user.identifiant;
+            // Update mobile badge too
+            document.getElementById('user-badge-mobile').innerText = user.identifiant;
+            loadPage('intro');
+        }
+
+        // --- NAVIGATION & CHARGEMENT ---
+        async function loadPage(slug) {
+            CURRENT_SLUG = slug;
+            console.log("Loading module:", slug);
+
+            // Fermer menu mobile si ouvert
+            if (window.innerWidth < 768) {
+                const sidebar = document.getElementById('sidebar');
+                if (!sidebar.classList.contains('-translate-x-full')) {
+                    toggleMobileMenu();
+                }
+            }
+
+            // Gestion de l'affichage
+            const dashboard = document.getElementById('home-dashboard');
+            const viewMode = document.getElementById('view-mode');
+            const editMode = document.getElementById('edit-mode');
+            const wikiHeader = document.getElementById('wiki-header');
+
+            // Reset visibilité
+            dashboard.classList.add('hidden');
+            viewMode.classList.add('hidden');
+            editMode.classList.add('hidden');
+            wikiHeader.classList.remove('hidden');
+
+            // 1. Accueil (Dashboard)
+            if (slug === 'intro') {
+                dashboard.classList.remove('hidden');
+                wikiHeader.classList.add('hidden'); // Pas de header "Wiki" sur l'accueil
+                return;
+            }
+
+            // 2. Page Wiki Standard
+            viewMode.classList.remove('hidden');
+
+            // Contenu par défaut
+            let content = "# Nouvelle Page\n\nContenu à rédiger.";
+            let title = "Module Inconnu";
+
+            // Titres et Contenus par défaut si la BDD est vide
+            if (slug === 'm1') { title = "Attractivité"; content = "# Attractivité\n\n## Description Métier\nAnalyse des dynamiques de population (Solde naturel vs Migratoire).\n\n## Indicateurs\n- **Variation Pop** : Évolution sur 10 ans.\n- **Solde Naturel** : Naissances - Décès.\n"; }
+            if (slug === 'm2') { title = "Tension Immo"; content = "# Tension Immobilière\n\n## Objectif\nIdentifier les zones où la demande est forte et l'offre faible.\n\n## Axes du Graphique\n- **X** : Taux de vacance\n- **Y** : Taux logement social\n- **Taille** : Densité population"; }
+            if (slug === 'm3') { title = "Radar Social"; content = "# Fragilité Sociale\n\n## Analyse Comparative\nCe module permet de comparer deux territoires sur des critères sociaux clés.\n\n- Taux de Chômage\n- Taux de Pauvreté\n- Précarité Énergétique"; }
+            if (slug === 'm4') { title = "Urbanisation"; content = "# Structure de l'Habitat\n\n## Corrélation\nVisualiser le lien entre la densité de population (Barres) et la part de maisons individuelles (Ligne).\n\n> Plus la densité augmente, plus la part d'individuel baisse."; }
+            if (slug === 'm5') { title = "Énergie"; content = "# Performance Énergétique\n\n## Parc Social\nFocus sur les passoires thermiques au sein du parc social (DPE E, F, G)."; }
+            if (slug === 'bdd') { title = "Dictionnaire Données"; content = "# Dictionnaire\n\n| Champ | Description | Source |\n|---|---|---|\n| `nom_dep` | Nom du département | INSEE |\n| `densite` | Habitants au km² | INSEE |"; }
+
+            // Essai de chargement depuis Supabase (surcharge le défaut si existe)
+            if (sbClient) {
+                try {
+                    const { data } = await sbClient.from('wiki_pages').select('*').eq('slug', slug).single();
+                    if (data) {
+                        content = data.content;
+                        title = data.title;
+                        if (data.updated_at) {
+                            document.getElementById('last-update').innerText = "Dernière modif : " + new Date(data.updated_at).toLocaleDateString();
+                        } else {
+                            document.getElementById('last-update').innerText = "";
+                        }
+                    } else {
+                        document.getElementById('last-update').innerText = "Nouvelle page (Brouillon)";
+                    }
+                } catch (e) { console.log("Utilisation contenu défaut"); }
+            }
+
+            document.getElementById('page-title-display').innerText = title;
+            document.getElementById('markdown-render').innerHTML = marked.parse(content);
+            document.getElementById('editor-textarea').value = content;
+
+            cancelEdit(); // Reset UI boutons
+        }
+
+        // --- ÉDITION ---
+        function toggleEditMode() {
+            document.getElementById('view-mode').classList.add('hidden');
+            document.getElementById('edit-mode').classList.remove('hidden');
+
+            // Toggle boutons header
+            document.getElementById('btn-edit').classList.add('hidden');
+            document.getElementById('btn-save').classList.remove('hidden');
+            document.getElementById('btn-cancel').classList.remove('hidden');
+        }
+
+        function cancelEdit() {
+            document.getElementById('edit-mode').classList.add('hidden');
+            document.getElementById('view-mode').classList.remove('hidden');
+
+            // Toggle boutons header
+            document.getElementById('btn-edit').classList.remove('hidden');
+            document.getElementById('btn-save').classList.add('hidden');
+            document.getElementById('btn-cancel').classList.add('hidden');
+        }
+
+        async function saveContent() {
+            const newContent = document.getElementById('editor-textarea').value;
+            const title = document.getElementById('page-title-display').innerText;
+
+            // Mise à jour locale immédiate (Optimistic UI)
+            document.getElementById('markdown-render').innerHTML = marked.parse(newContent);
+
+            // Sauvegarde Cloud
+            if (sbClient && CURRENT_USER) {
+                const { error } = await sbClient.from('wiki_pages').upsert({
+                    slug: CURRENT_SLUG,
+                    title: title,
+                    content: newContent,
+                    last_editor: CURRENT_USER.identifiant,
+                    updated_at: new Date()
+                });
+
+                if (!error) {
+                    // Success visual feedback could go here
+                    document.getElementById('last-update').innerText = "Enregistré à l'instant";
+                } else {
+                    alert("Erreur de sauvegarde Cloud (voir console)");
+                    console.error(error);
+                }
+            } else {
+                console.warn("Pas de client Supabase ou User connecté, sauvegarde locale volatile uniquement.");
+            }
+
+            cancelEdit();
+        }
+    </script>
+</body>
+
+</html>

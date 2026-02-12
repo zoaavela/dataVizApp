@@ -1,0 +1,21 @@
+graph LR
+    User((User)) --> Login[SAS de Login]
+    Login --> Dashboard{Dashboard Principal}
+    
+    subgraph "Visualisation de Données"
+        Dashboard --> M1[M1: Attractivité & Soldes]
+        Dashboard --> M2[M2: Tension Vacance/Social]
+        Dashboard --> M3[M3: Radar de Précarité]
+        Dashboard --> M4[M4: Densité vs Individuel]
+        Dashboard --> M5[M5: Énergie Parc Social]
+    end
+
+    subgraph "Outils de Pertinence"
+        M1 & M2 & M3 & M4 & M5 --> Sort[Tri Croissant/Décroissant]
+        M1 & M2 & M3 & M4 & M5 --> Filter[Filtre Régional/Départemental]
+    end
+
+    Dashboard -.-> Admin[Import CSV Optionnel]
+    
+    style Dashboard fill:#f9f,stroke:#333
+    style Admin stroke-dasharray: 5 5
