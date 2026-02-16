@@ -1,57 +1,106 @@
 classDiagram
+    %% Entité Principale (Table Mère)
+    class Territoire {
+        +int id
+        +string nom
+        +string code
+        +string region
+        +float lat
+        +float lng
+        -- Relations (OneToOne) --
+        +IndicateurEconomie economie
+        +IndicateurDemographie demographie
+        +IndicateurUrbanisme urbanisme
+        +IndicateurEnergie energie
+        +IndicateurLogement logement
+    }
+
+    %% Module 1 : Quadrant (index.html)
+    class IndicateurEconomie {
+        +int id
+        +int annee
+        +float tauxPauvrete
+        +float soldeMigratoire
+        +Territoire territoire
+    }
+
+    %% Module 2 : Pyramide des âges (2.html)
+    class IndicateurDemographie {
+        +int id
+        +int annee
+        +float partJeunes
+        +float partSeniors
+        +Territoire territoire
+    }
+
+    %% Module 3 : Paradoxe du Béton (3.html)
+    class IndicateurUrbanisme {
+        +int id
+        +int annee
+        +int rangPop
+        +int rangConst
+        +Territoire territoire
+    }
+
+    %% Module 5 : Dette Thermique (5.html)
+    class IndicateurEnergie {
+        +int id
+        +int annee
+        +float ageMoyenParc
+        +float tauxPassoires
+        +Territoire territoire
+    }
+
+    %% Module 6 & Carte : Logement (6.html & carte.html)
+    class IndicateurLogement {
+        +int id
+        +int annee
+        +int stockHlm
+        +float tauxHlm
+        +Territoire territoire
+    }
+
+    %% Controller API
+    class TerritoireController {
+        +quadrant() : JsonResponse
+        +age() : JsonResponse
+        +beton() : JsonResponse
+        +thermique() : JsonResponse
+        +logement() : JsonResponse
+        +carte() : JsonResponse
+    }
+
+    %% Commande d'import CSV
+    class ImportCsvCommand {
+        -EntityManagerInterface em
+        +execute() : int
+    }
+
+    %% Relations BDD (OneToOne Bidirectionnel)
+    Territoire "1" <--> "1" IndicateurEconomie : "groupe: module:quadrant"
+    Territoire "1" <--> "1" IndicateurDemographie : "groupe: module:age"
+    Territoire "1" <--> "1" IndicateurUrbanisme : "groupe: module:beton"
+    Territoire "1" <--> "1" IndicateurEnergie : "groupe: module:thermique"
+    Territoire "1" <--> "1" IndicateurLogement : "groupe: module:carte"
+
+    %% Dépendances logiques
+    TerritoireController ..> Territoire : "Récupère et Sérialise"
+    ImportCsvCommand ..> Territoire : "Crée et Hydrate"
+    ImportCsvCommand ..> IndicateurEconomie : "Crée et Hydrate"
+
+    %% La nouvelle entité User
     class User {
-        -id: Integer
-        -identifiant: String
-        -motDePasse: String
-        -nom: String
-        -prenom: String
-        +getNomComplet(): String
-        +verifierPassword(pwd: String): Boolean
+        +int id
+        +string email
+        +array roles
+        +string password
+        -- Sécurité --
+        +getUserIdentifier()
+        +getRoles()
+        +getPassword()
     }
 
-    class DatabaseConnector {
-        -connectionString: String
-        +fetchData(query: String): List~RawData~
-        +authenticate(id: String, mdp: String): User
-    }
-
-    class DataProcessor {
-        -rawData: List~RawData~
-        +toNumeric(value: String): Float
-        +sortByField(field: String, asc: Boolean): List
-        +getTopN(n: Integer): List
-    }
-
-    class DashboardManager {
-        -currentUser: User
-        -activeModules: List~ChartModule~
-        +initDashboard(user: User): void
-        +logout(): void
-    }
-
-    class ChartModule {
-        <<abstract>>
-        -chartInstance: Chart
-        -canvasId: String
-        +render(data: List): void
-        +update(newData: List): void
-    }
-
-    class AttractivityModule { +render(data): void }
-    class HousingTensionModule { +render(data): void }
-    class SocialRadarModule { +render(data): void }
-    class UrbanDensityModule { +render(data): void }
-    class EnergySocialModule { +render(data): void }
-
-    %% Relations
-    DashboardManager "1" o-- "1" User : est connecté
-    DashboardManager "1" *-- "5" ChartModule : gère
-    DashboardManager ..> DatabaseConnector : sollicite
+    note for User "Implémente UserInterface\n& PasswordAuthenticatedUserInterface"
     
-    ChartModule <|-- AttractivityModule
-    ChartModule <|-- HousingTensionModule
-    ChartModule <|-- SocialRadarModule
-    ChartModule <|-- UrbanDensityModule
-    ChartModule <|-- EnergySocialModule
-
-    DataProcessor o-- DatabaseConnector : traite la data
+    %% User est séparé pour l'instant (c'est celui qui se connecte)
+    User --|> Territoire : "Consulte (via API)"
