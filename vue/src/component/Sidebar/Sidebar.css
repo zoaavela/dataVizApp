@@ -1,0 +1,185 @@
+:root {
+    --bg-app: #f3f4f6;
+    /* Gris très doux pour le fond de page */
+    --sidebar-bg: #ffffff;
+
+    /* Palette Pastel (Basée sur tes images) */
+    --primary-pastel: #e0e7ff;
+    /* Fond actif (Indigo très pâle) */
+    --primary-icon: #6366f1;
+    /* Couleur icône active (Indigo) */
+    --text-muted: #9ca3af;
+    /* Gris pour les inactifs */
+    --text-dark: #374151;
+
+    /* Dimensions */
+    --w-closed: 80px;
+    /* Assez large pour être joli centré */
+    --w-open: 250px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Animation fluide */
+}
+
+/* Reset de base pour éviter les marges fantômes */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-app);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.sidebar {
+    height: 100vh;
+    /* Prend toute la hauteur = plus stable */
+    background: var(--sidebar-bg);
+
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    /* Empêche la barre de s'écraser */
+
+    transition: var(--transition);
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+    /* Bordure ultra légère */
+    position: relative;
+    z-index: 50;
+
+    /* Ombre portée douce sur la droite uniquement */
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
+}
+
+/* --- ETATS --- */
+.sidebar.closed {
+    width: var(--w-closed);
+}
+
+.sidebar.open {
+    width: var(--w-open);
+}
+
+/* --- HEADER --- */
+.header {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    /* Centré si fermé, décalé si ouvert */
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.sidebar.open .header {
+    justify-content: flex-end;
+    /* Pousse le bouton à droite */
+    padding-right: 20px;
+}
+
+.toggle-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 8px;
+    border-radius: 8px;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toggle-btn:hover {
+    background: #f9fafb;
+    color: var(--text-dark);
+}
+
+/* --- MENU --- */
+.menu-list {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* Espacement aéré */
+    padding: 0 12px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    height: 50px;
+    /* Hauteur fixe pour éviter les sauts */
+    border-radius: 12px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: var(--transition);
+    overflow: hidden;
+    /* Coupe ce qui dépasse */
+    position: relative;
+}
+
+/* --- CENTRAGE DES ICONES (IMPORTANT) --- */
+/* La boîte de l'icône fait toujours la même taille */
+.icon-box {
+    min-width: 56px;
+    /* Largeur fixe = centrage parfait quand fermé */
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- ETAT ACTIF (STYLE MIGON) --- */
+.menu-item.active {
+    background-color: var(--primary-pastel);
+    color: var(--primary-icon);
+}
+
+/* Optionnel : petite barre sur le côté si actif */
+.menu-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    height: 60%;
+    width: 3px;
+    background: var(--primary-icon);
+    border-radius: 0 4px 4px 0;
+    display: none;
+    /* Enlève le commentaire si tu veux la barre */
+}
+
+.menu-item:hover:not(.active) {
+    background-color: #f9fafb;
+    color: var(--text-dark);
+}
+
+/* --- TEXTE --- */
+.label {
+    white-space: nowrap;
+    /* EMPÊCHE le texte de passer à la ligne */
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Apparition du texte différée pour éviter les bugs visuels */
+.sidebar.open .label {
+    opacity: 1;
+    transform: translateX(0);
+    transition-delay: 0.1s;
+    /* Attend que la sidebar s'ouvre un peu */
+}
+
+/* --- FOOTER --- */
+.footer {
+    padding: 20px 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.logout:hover {
+    background-color: #fef2f2;
+    color: #ef4444;
+}
