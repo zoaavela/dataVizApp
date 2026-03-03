@@ -1,0 +1,12 @@
+nelmio_cors:
+    defaults:
+        origin_regex: true
+        # Autorise localhost et 127.0.0.1 avec n'importe quel port (ex: 5173)
+        allow_origin: ['^http://localhost:[0-9]+', '^http://127\.0\.0\.1:[0-9]+']
+        allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
+        allow_headers: ['Content-Type', 'Authorization', 'Accept']
+        # TRÈS IMPORTANT car on a mis "credentials: 'include'" dans ton api.js React
+        allow_credentials: true 
+        max_age: 3600
+    paths:
+        '^/api/': ~

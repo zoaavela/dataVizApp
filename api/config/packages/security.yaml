@@ -5,18 +5,31 @@ security:
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        users_in_memory: { memory: null }
+        # used to reload user from session & other features (e.g. switch_user)
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
 
     firewalls:
         dev:
-            # Ensure dev tools and static assets are always allowed
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
         main:
             lazy: true
-            provider: users_in_memory
+            provider: app_user_provider
 
-            # Activate different ways to authenticate:
+            # --- C'EST ICI QUE J'AI AJOUTÉ LA CONFIG MANQUANTE ---
+            json_login:
+                check_path: api_login        # Le nom de la route dans SecurityController
+                username_path: email         # La clé JSON pour l'identifiant
+                password_path: password      # La clé JSON pour le mot de passe
+            
+            logout:
+                path: app_logout
+            # -----------------------------------------------------
+
+            # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
 
             # https://symfony.com/doc/current/security/impersonating_user.html
@@ -24,8 +37,9 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/admin, roles: ROLE_ADMIN }
 
 when@test:
     security:
