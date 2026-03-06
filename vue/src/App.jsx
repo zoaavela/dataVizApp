@@ -69,7 +69,6 @@ export default function App() {
             </AdminRoute>
           } />
 
-          <Route path="/settings" element={<Settings />} />
           <Route path="/about" element={<Propos />} />
         </Route>
       </Routes>
