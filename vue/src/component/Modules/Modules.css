@@ -1,0 +1,183 @@
+/* RESET & CONTENEUR PRINCIPAL */
+.bi-dashboard-container.module-hub-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 3rem 2rem;
+    background-color: var(--bg-dark, #0b0c10);
+    color: #f8fafc;
+    font-family: inherit;
+    box-sizing: border-box;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* EN-TÊTE */
+.module-hub-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #1e293b;
+    margin-bottom: 2.5rem;
+    animation: fadeInDown 0.5s ease-out;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bi-surtitle {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #64748b;
+    margin-bottom: 0.75rem;
+}
+
+.bi-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+}
+
+.bi-subtitle {
+    font-size: 1rem;
+    color: #94a3b8;
+    margin: 0;
+    max-width: 800px;
+    line-height: 1.5;
+}
+
+/* GRILLE SYMÉTRIQUE (2 colonnes pour des cartes rectangulaires larges) */
+.bi-module-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* CARTE MODULE HORIZONTALE */
+.bi-module-card {
+    background-color: #111418;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 1.5rem;
+    gap: 1.5rem;
+}
+
+/* Ligne colorée d'accentuation sur le côté gauche au survol */
+.bi-module-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: var(--accent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.bi-module-card:hover {
+    border-color: #334155;
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.6);
+    background-color: #13171c;
+}
+
+.bi-module-card:hover::before {
+    opacity: 1;
+}
+
+/* ICÔNE PLUS GRANDE À GAUCHE */
+.module-icon-wrapper {
+    flex-shrink: 0;
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    background-color: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+    transition: transform 0.3s ease;
+}
+
+.bi-module-card:hover .module-icon-wrapper {
+    transform: scale(1.05);
+}
+
+/* CONTENU TEXTUEL À DROITE */
+.module-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.module-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.01em;
+}
+
+.module-desc {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* RESPONSIVITÉ */
+@media (max-width: 1024px) {
+    .bi-module-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .bi-dashboard-container.module-hub-container {
+        padding: 1.5rem;
+    }
+
+    .bi-title {
+        font-size: 2rem;
+    }
+
+    .bi-module-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
