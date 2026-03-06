@@ -1,85 +1,82 @@
 classDiagram
-    %% Core Entity
-    class Territoire {
-        +int id
-        +string nom
-        +string code
-        +string region
-        +float lat
-        +float lng
-        -- Relations --
-        +IndicateurEconomie economie
-        +IndicateurDemographie demographie
-        +IndicateurUrbanisme urbanisme
-        +IndicateurEnergie energie
-        +IndicateurLogement logement
+    namespace Domain {
+        class Territoire {
+            +int id
+            +string nom
+            +string code
+            +string region
+            +float lat
+            +float lng
+        }
+        class IndicateurEconomie {
+            +int id
+            +int annee
+            +float tauxPauvrete
+            +float soldeMigratoire
+        }
+        class IndicateurDemographie {
+            +int id
+            +int annee
+            +float partJeunes
+            +float partSeniors
+        }
+        class IndicateurUrbanisme {
+            +int id
+            +int annee
+            +int rangPop
+            +int rangConst
+        }
+        class IndicateurEnergie {
+            +int id
+            +int annee
+            +float ageMoyenParc
+            +float tauxPassoires
+        }
+        class IndicateurLogement {
+            +int id
+            +int annee
+            +int stockHlm
+            +float tauxHlm
+        }
     }
 
-    %% Modules
-    class IndicateurEconomie {
-        +int id
-        +int annee
-        +float tauxPauvrete
-        +float soldeMigratoire
-    }
-    class IndicateurDemographie {
-        +int id
-        +int annee
-        +float partJeunes
-        +float partSeniors
-    }
-    class IndicateurUrbanisme {
-        +int id
-        +int annee
-        +int rangPop
-        +int rangConst
-    }
-    class IndicateurEnergie {
-        +int id
-        +int annee
-        +float ageMoyenParc
-        +float tauxPassoires
-    }
-    class IndicateurLogement {
-        +int id
-        +int annee
-        +int stockHlm
-        +float tauxHlm
+    namespace Security {
+        class User {
+            +int id
+            +string email
+            +String[*] roles
+            +string password
+        }
     }
 
-    %% Security Entity
-    class User {
-        +int id
-        +string email
-        +array roles
-        +string password
+    namespace Web {
+        class TerritoireController {
+            +quadrant()
+            +age()
+            +beton()
+            +thermique()
+            +logement()
+            +carte()
+        }
     }
 
-    %% Logic / Services
-    class TerritoireController {
-        +quadrant()
-        +age()
-        +beton()
-        +thermique()
-        +logement()
-        +carte()
-    }
-
-    class ImportCsvCommand {
-        +execute()
-    }
-
-    class CreateUserCommand {
-        +execute()
+    namespace Console {
+        class ImportCsvCommand {
+            +execute()
+        }
+        class CreateUserCommand {
+            +execute()
+        }
     }
 
     %% Relationships
-    Territoire "1" -- "1" IndicateurEconomie : OneToOne
-    Territoire "1" -- "1" IndicateurDemographie : OneToOne
-    Territoire "1" -- "1" IndicateurUrbanisme : OneToOne
-    Territoire "1" -- "1" IndicateurEnergie : OneToOne
-    Territoire "1" -- "1" IndicateurLogement : OneToOne
+    Territoire "1" --> "*" IndicateurEconomie : OneToMany
+    Territoire "1" --> "*" IndicateurDemographie : OneToMany
+    Territoire "1" --> "*" IndicateurUrbanisme : OneToMany
+    Territoire "1" --> "*" IndicateurEnergie : OneToMany
+    Territoire "1" --> "*" IndicateurLogement : OneToMany
 
+    %% Dependencies
     TerritoireController ..> Territoire : Uses
     ImportCsvCommand ..> Territoire : Hydrates
     CreateUserCommand ..> User : Creates
