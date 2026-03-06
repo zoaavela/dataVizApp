@@ -11,7 +11,6 @@ import Logement from './component/Logement/Logement';
 import Thermique from './component/Thermique/Thermique';
 import Demographie from './component/Demographie/Demographie';
 import Propos from './component/Propos/Propos';
-import Settings from './component/Settings/Settings';
 import Profil from './component/Profil/Profil';
 import Register from './component/Register/Register';
 import Home from './component/Home/Home';
