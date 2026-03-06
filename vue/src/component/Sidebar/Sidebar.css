@@ -1,26 +1,24 @@
+/* Importation d'une police très stylée et moderne */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap');
+
 :root {
-    --bg-app: #f3f4f6;
-    /* Gris très doux pour le fond de page */
+    --bg-app: #f8fafc;
     --sidebar-bg: #ffffff;
 
-    /* Palette Pastel (Basée sur tes images) */
-    --primary-pastel: #e0e7ff;
-    /* Fond actif (Indigo très pâle) */
-    --primary-icon: #6366f1;
-    /* Couleur icône active (Indigo) */
-    --text-muted: #9ca3af;
-    /* Gris pour les inactifs */
-    --text-dark: #374151;
+    /* Nouvelles couleurs alignées sur ta DA Verte */
+    --primary-pastel: #ecfdf5;
+    /* Vert émeraude très très pâle */
+    --primary-icon: #10b981;
+    /* Vert émeraude actif */
+    --text-muted: #94a3b8;
+    --text-dark: #1e293b;
 
     /* Dimensions */
-    --w-closed: 80px;
-    /* Assez large pour être joli centré */
-    --w-open: 250px;
+    --w-closed: 88px;
+    --w-open: 260px;
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    /* Animation fluide */
 }
 
-/* Reset de base pour éviter les marges fantômes */
 * {
     box-sizing: border-box;
 }
@@ -29,30 +27,23 @@ body {
     margin: 0;
     padding: 0;
     background-color: var(--bg-app);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    /* Application de la nouvelle police */
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 .sidebar {
     height: 100vh;
-    /* Prend toute la hauteur = plus stable */
     background: var(--sidebar-bg);
-
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    /* Empêche la barre de s'écraser */
-
     transition: var(--transition);
     border-right: 1px solid rgba(0, 0, 0, 0.05);
-    /* Bordure ultra légère */
     position: relative;
     z-index: 50;
-
-    /* Ombre portée douce sur la droite uniquement */
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
 }
 
-/* --- ETATS --- */
 .sidebar.closed {
     width: var(--w-closed);
 }
@@ -61,20 +52,51 @@ body {
     width: var(--w-open);
 }
 
-/* --- HEADER --- */
+/* --- HEADER & LOGO --- */
 .header {
-    height: 80px;
+    height: 90px;
     display: flex;
     align-items: center;
-    /* Centré si fermé, décalé si ouvert */
-    justify-content: center;
-    margin-bottom: 20px;
+    justify-content: space-between;
+    padding: 0 16px;
+    margin-bottom: 10px;
+    overflow: hidden;
 }
 
-.sidebar.open .header {
-    justify-content: flex-end;
-    /* Pousse le bouton à droite */
-    padding-right: 20px;
+.sidebar.closed .header {
+    justify-content: center;
+    padding: 0;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-left: 8px;
+    opacity: 1;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+}
+
+.sidebar.closed .logo-container {
+    display: none;
+    /* Cache le logo quand c'est fermé pour centrer le bouton */
+}
+
+.logo-img {
+    height: 36px;
+    width: auto;
+}
+
+.logo-text {
+    font-size: 1.4rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    /* Dégradé stylé sur le texte VISION */
+    background: linear-gradient(45deg, #10b981, #059669);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .toggle-btn {
@@ -82,8 +104,8 @@ body {
     border: none;
     cursor: pointer;
     color: var(--text-muted);
-    padding: 8px;
-    border-radius: 8px;
+    padding: 10px;
+    border-radius: 10px;
     transition: 0.2s;
     display: flex;
     align-items: center;
@@ -91,8 +113,8 @@ body {
 }
 
 .toggle-btn:hover {
-    background: #f9fafb;
-    color: var(--text-dark);
+    background: #f1f5f9;
+    color: var(--primary-icon);
 }
 
 /* --- MENU --- */
@@ -100,86 +122,88 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    /* Espacement aéré */
-    padding: 0 12px;
+    gap: 8px;
+    padding: 0 16px;
 }
 
 .menu-item {
     display: flex;
     align-items: center;
-    height: 50px;
-    /* Hauteur fixe pour éviter les sauts */
+    height: 52px;
     border-radius: 12px;
     cursor: pointer;
     color: var(--text-muted);
     transition: var(--transition);
     overflow: hidden;
-    /* Coupe ce qui dépasse */
     position: relative;
+    font-weight: 500;
 }
 
-/* --- CENTRAGE DES ICONES (IMPORTANT) --- */
-/* La boîte de l'icône fait toujours la même taille */
 .icon-box {
     min-width: 56px;
-    /* Largeur fixe = centrage parfait quand fermé */
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: color 0.2s;
 }
 
-/* --- ETAT ACTIF (STYLE MIGON) --- */
+/* --- ETAT ACTIF --- */
 .menu-item.active {
     background-color: var(--primary-pastel);
     color: var(--primary-icon);
+    font-weight: 700;
 }
 
-/* Optionnel : petite barre sur le côté si actif */
 .menu-item.active::before {
     content: '';
     position: absolute;
     left: 0;
-    height: 60%;
-    width: 3px;
+    height: 50%;
+    width: 4px;
     background: var(--primary-icon);
     border-radius: 0 4px 4px 0;
-    display: none;
-    /* Enlève le commentaire si tu veux la barre */
 }
 
 .menu-item:hover:not(.active) {
-    background-color: #f9fafb;
+    background-color: #f8fafc;
     color: var(--text-dark);
+}
+
+.menu-item:hover:not(.active) .icon-box {
+    color: var(--primary-icon);
 }
 
 /* --- TEXTE --- */
 .label {
     white-space: nowrap;
-    /* EMPÊCHE le texte de passer à la ligne */
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: 0.95rem;
     opacity: 0;
     transform: translateX(-10px);
     transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-/* Apparition du texte différée pour éviter les bugs visuels */
 .sidebar.open .label {
     opacity: 1;
     transform: translateX(0);
     transition-delay: 0.1s;
-    /* Attend que la sidebar s'ouvre un peu */
 }
 
 /* --- FOOTER --- */
 .footer {
-    padding: 20px 12px;
-    border-top: 1px solid rgba(0, 0, 0, 0.03);
+    padding: 20px 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.logout {
+    color: var(--text-muted);
 }
 
 .logout:hover {
-    background-color: #fef2f2;
-    color: #ef4444;
+    background-color: #fef2f2 !important;
+    color: #ef4444 !important;
+}
+
+.logout:hover .icon-box {
+    color: #ef4444 !important;
 }

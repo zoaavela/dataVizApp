@@ -1,22 +1,37 @@
 import React, { useState } from 'react';
-import { Home, User, Settings, LogOut, Menu, ChevronLeft } from 'lucide-react';
+// Ajout de l'icône Upload pour l'import, et Info pour à propos
+import { Home, Info, Upload, LogOut, Menu, ChevronLeft } from 'lucide-react';
+import logo from '../assets/logo3.png';
 import './Sidebar.css';
 
-const Sidebar = () => {
+const Sidebar = ({ user }) => {
     const [isOpen, setIsOpen] = useState(true);
     const [activeItem, setActiveItem] = useState("Accueil");
 
+    // Menus de base accessibles à tous
     const menuItems = [
         { name: "Accueil", icon: <Home size={22} /> },
-        { name: "À propos", icon: <User size={22} /> },
-        { name: "Paramètres", icon: <Settings size={22} /> },
+        { name: "À propos", icon: <Info size={22} /> },
     ];
+
+    // Vérification du rôle administrateur (basé sur ton format de base de données)
+    const isAdmin = user && user.roles && user.roles.includes("ROLE_ADMIN");
+
+    // Ajout conditionnel du menu Import
+    if (isAdmin) {
+        menuItems.push({ name: "Import", icon: <Upload size={22} /> });
+    }
 
     return (
         <div className={`sidebar ${isOpen ? 'open' : 'closed'}`}>
 
-            {/* --- HEADER (BOUTON TOGGLE) --- */}
+            {/* --- HEADER & LOGO --- */}
             <div className="header">
+                <div className="logo-container">
+                    <img src={logo} alt="Logo" className="logo-img" />
+                    <span className="logo-text">VISION</span>
+                </div>
+
                 <button className="toggle-btn" onClick={() => setIsOpen(!isOpen)}>
                     {isOpen ? <ChevronLeft size={24} /> : <Menu size={24} />}
                 </button>
