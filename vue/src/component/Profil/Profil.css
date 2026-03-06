@@ -1,0 +1,280 @@
+/* --- LAYOUT CENTRAL & TYPOGRAPHIE --- */
+.profil-container {
+    max-width: 760px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+    /* Forcé sur toute la page */
+    color: #f8fafc;
+}
+
+.profil-loader {
+    text-align: center;
+    margin-top: 20vh;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #64748b;
+    font-family: 'Outfit', sans-serif;
+}
+
+/* --- EN-TÊTE --- */
+.profil-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.profil-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+}
+
+.profil-subtitle {
+    font-size: 1rem;
+    color: #94a3b8;
+    font-weight: 400;
+    margin: 0 0 1.5rem 0;
+}
+
+.profil-email-badge {
+    display: inline-block;
+    background-color: #0f172a;
+    border: 1px solid #1e293b;
+    padding: 0.4rem 1rem;
+    border-radius: 99px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #cbd5e1;
+    letter-spacing: 0.02em;
+}
+
+/* --- ALERTES --- */
+.profil-alert {
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    animation: fadeInDown 0.3s ease;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.profil-alert.success {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.profil-alert.error {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* --- CARTES (BLOCS) --- */
+.profil-card {
+    background-color: #111418;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.profil-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid #1e293b;
+    padding-bottom: 1rem;
+}
+
+.profil-icon {
+    color: #64748b;
+}
+
+.profil-card-header h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    color: #f8fafc;
+    letter-spacing: -0.01em;
+}
+
+/* --- FORMULAIRES --- */
+.profil-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.profil-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.profil-form-group label {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.profil-form-group input {
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    color: #f8fafc;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    /* Utilise Outfit */
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.profil-form-group input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.profil-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+}
+
+/* --- BOUTONS REVISITÉS --- */
+.profil-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 1px solid transparent;
+}
+
+/* Bouton Principal (Action forte) */
+.btn-primary {
+    background-color: #10b981;
+    color: #022c22;
+}
+
+.btn-primary:hover {
+    background-color: #34d399;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+/* Bouton Secondaire (Action normale) */
+.btn-secondary {
+    background-color: #1e293b;
+    color: #f8fafc;
+    border-color: #334155;
+}
+
+.btn-secondary:hover {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+/* Bouton Outline (Action neutre) */
+.btn-outline {
+    background-color: transparent;
+    color: #cbd5e1;
+    border-color: #475569;
+}
+
+.btn-outline:hover {
+    background-color: #1e293b;
+    color: #ffffff;
+    border-color: #64748b;
+}
+
+/* Bouton Danger (Action critique) */
+.btn-danger {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+    background-color: #ef4444;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+/* --- ZONE DE DANGER --- */
+.danger-zone {
+    border-color: rgba(239, 68, 68, 0.2);
+    background: linear-gradient(180deg, rgba(239, 68, 68, 0.02) 0%, transparent 100%);
+}
+
+.danger-header {
+    border-bottom-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.danger-header .profil-icon,
+.danger-header h2 {
+    color: #ef4444;
+}
+
+.danger-text {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 1.5rem 0;
+}
+
+.profil-actions-row {
+    display: flex;
+    gap: 1rem;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 640px) {
+    .profil-form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .profil-actions-row {
+        flex-direction: column;
+    }
+
+    .profil-btn {
+        width: 100%;
+    }
+
+    .profil-form-actions {
+        justify-content: stretch;
+    }
+}
