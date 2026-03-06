@@ -9,9 +9,8 @@ export const login = async (email, password) => {
 
     if (!response.ok) throw new Error('Erreur connexion');
 
-    // On récupère TOUT le JSON ici
     const data = await response.json();
-    return data; // Assure-toi qu'il retourne bien TOUT l'objet data
+    return data;
 };
 
 export const register = (userData) => {
