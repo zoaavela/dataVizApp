@@ -22,7 +22,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./vue/dist # Remplace 'dist' par 'build' si ton projet utilise Create React App
+          path: ./vue/dist 
   deploy:
     needs: build
     runs-on: ubuntu-latest
