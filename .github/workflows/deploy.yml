@@ -18,11 +18,11 @@ jobs:
         run: |
           cd vue
           npm install
-          npm run build
+          CI=false npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./vue/dist # Change 'dist' en 'build' si tu n'utilises pas Vite
+          path: ./vue/dist # Remplace 'dist' par 'build' si ton projet utilise Create React App
   deploy:
     needs: build
     runs-on: ubuntu-latest
