@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 // Ajout de l'icône Upload pour l'import, et Info pour à propos
 import { Home, Info, Upload, LogOut, Menu, ChevronLeft } from 'lucide-react';
-import logo from '../assets/logo3.png';
+import logo from '../../assets/logo3.png';
 import './Sidebar.css';
 
 const Sidebar = ({ user }) => {
