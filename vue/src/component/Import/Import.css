@@ -1,0 +1,217 @@
+.bento-workspace {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 3rem;
+    background-color: var(--bg-dark, #0b0c10);
+    color: #ffffff;
+    font-family: 'Outfit', sans-serif;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.workspace-header {
+    flex-shrink: 0;
+    margin-bottom: 2.5rem;
+}
+
+.workspace-surtitle {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+}
+
+.workspace-title {
+    font-size: 3rem;
+    font-weight: 900;
+    margin: 0 0 0.75rem 0;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+}
+
+.workspace-subtitle {
+    font-size: 1.1rem;
+    color: #94a3b8;
+    margin: 0;
+    max-width: 600px;
+}
+
+.import-container {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.import-dropzone {
+    background-color: #16191d;
+    border: 2px dashed #2d3136;
+    border-radius: 16px;
+    padding: 4rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.import-dropzone:hover,
+.import-dropzone.dragging {
+    border-color: #10b981;
+    background-color: rgba(16, 185, 129, 0.05);
+}
+
+.import-dropzone.has-file {
+    border-style: solid;
+    border-color: #10b981;
+}
+
+.dropzone-icon {
+    color: #94a3b8;
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.import-dropzone:hover .dropzone-icon {
+    transform: translateY(-5px);
+    color: #10b981;
+}
+
+.dropzone-icon.file-ready {
+    color: #10b981;
+}
+
+.dropzone-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: #ffffff;
+}
+
+.dropzone-text {
+    font-size: 1rem;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.import-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.import-btn-primary,
+.import-btn-secondary {
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.import-btn-primary {
+    background-color: #10b981;
+    color: #000000;
+}
+
+.import-btn-primary:hover {
+    background-color: #0ea5e9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.import-btn-secondary {
+    background-color: transparent;
+    color: #ffffff;
+    border: 1px solid #2d3136;
+}
+
+.import-btn-secondary:hover {
+    border-color: #94a3b8;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.import-status-box {
+    background-color: #16191d;
+    border: 1px solid #2d3136;
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.import-status-box.success {
+    border-color: #10b981;
+    background-color: rgba(16, 185, 129, 0.05);
+}
+
+.import-status-box.error {
+    border-color: #ef4444;
+    background-color: rgba(239, 68, 68, 0.05);
+}
+
+.status-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: #ffffff;
+}
+
+.status-text {
+    font-size: 1rem;
+    color: #94a3b8;
+    margin: 0 0 2rem 0;
+}
+
+.progress-bar-container {
+    width: 100%;
+    max-width: 400px;
+    height: 8px;
+    background-color: #2d3136;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: #10b981;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-weight: 700;
+    color: #10b981;
+}
+
+@media (max-width: 768px) {
+    .bento-workspace {
+        padding: 2rem;
+    }
+
+    .import-dropzone {
+        padding: 2rem 1rem;
+    }
+
+    .import-actions {
+        flex-direction: column;
+    }
+
+    .import-btn-primary,
+    .import-btn-secondary {
+        width: 100%;
+    }
+}
