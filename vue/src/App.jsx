@@ -32,14 +32,13 @@ const AdminRoute = ({ user, children }) => {
 };
 
 export default function App() {
-  // On initialise le state avec ce qui est stocké dans le navigateur
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/dataVizApp">
       <Routes>
         <Route path="/" element={<Navigate to="/accueil" replace />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
@@ -74,4 +73,3 @@ export default function App() {
     </BrowserRouter>
   );
 }
-
