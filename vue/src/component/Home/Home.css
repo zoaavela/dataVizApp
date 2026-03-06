@@ -1,0 +1,455 @@
+/* RESET & VARIABLES */
+.bi-home-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+    font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+    color: #f8fafc;
+    position: relative;
+    z-index: 1;
+    animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Halo lumineux global */
+.bi-bg-glow {
+    position: absolute;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, rgba(59, 130, 246, 0.03) 40%, transparent 70%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* --- HERO SECTION --- */
+.bi-hero-section {
+    margin-bottom: 3.5rem;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 900;
+    margin: 0;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+}
+
+.hero-highlight {
+    background: linear-gradient(to right, #10b981, #3b82f6);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #94a3b8;
+    margin: 0;
+}
+
+/* Barre de statut des données */
+.hero-data-status {
+    display: inline-flex;
+    align-items: center;
+    background-color: rgba(15, 23, 42, 0.6);
+    border: 1px solid #1e293b;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    width: fit-content;
+}
+
+.status-item {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-dot.green {
+    background-color: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.status-separator {
+    width: 1px;
+    height: 12px;
+    background-color: #334155;
+    margin: 0 1rem;
+}
+
+/* --- ACTIONS PRINCIPALES (GRID 2 COLONNES) --- */
+.bi-home-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-bottom: 3.5rem;
+}
+
+.bi-action-card {
+    position: relative;
+    background-color: #111418;
+    border: 1px solid #1e293b;
+    border-radius: 16px;
+    padding: 2.5rem;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    min-height: 320px;
+}
+
+.card-bg-pattern {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-image: radial-gradient(#1e293b 1px, transparent 1px);
+    background-size: 20px 20px;
+    opacity: 0.3;
+    z-index: 0;
+    transition: opacity 0.4s ease;
+}
+
+.card-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.bi-action-card:hover {
+    border-color: #334155;
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+    background-color: #151a21;
+}
+
+.bi-action-card.primary:hover {
+    border-color: #10b981;
+}
+
+.bi-action-card.secondary:hover {
+    border-color: #3b82f6;
+}
+
+.bi-action-card:hover .card-bg-pattern {
+    opacity: 0.6;
+}
+
+.card-header-icon {
+    margin-bottom: 1.5rem;
+    color: #f8fafc;
+    transition: transform 0.3s ease;
+}
+
+.bi-action-card.primary .card-header-icon {
+    color: #10b981;
+}
+
+.bi-action-card.secondary .card-header-icon {
+    color: #3b82f6;
+}
+
+.bi-action-card:hover .card-header-icon {
+    transform: scale(1.1) translateX(5px);
+}
+
+.card-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0 0 1rem 0;
+    color: #ffffff;
+}
+
+.card-desc {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #94a3b8;
+    margin: 0;
+    max-width: 90%;
+}
+
+/* --- DÉCORATIONS VISUELLES ABSTRAITES --- */
+.deco-visual {
+    margin-top: auto;
+    margin-bottom: 2rem;
+    height: 60px;
+    display: flex;
+    align-items: flex-end;
+    opacity: 0.5;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.bi-action-card:hover .deco-visual {
+    opacity: 1;
+    transform: translateY(-5px);
+}
+
+/* Déco Graphique Barres */
+.deco-chart {
+    gap: 8px;
+}
+
+.deco-chart .bar {
+    width: 12px;
+    background-color: #3b82f6;
+    border-radius: 3px 3px 0 0;
+    animation: growBar 2s ease-out forwards;
+}
+
+.deco-chart .b1 {
+    height: 40%;
+    background-color: rgba(59, 130, 246, 0.4);
+}
+
+.deco-chart .b2 {
+    height: 70%;
+    background-color: rgba(59, 130, 246, 0.6);
+}
+
+.deco-chart .b3 {
+    height: 50%;
+    background-color: rgba(59, 130, 246, 0.8);
+}
+
+.deco-chart .b4 {
+    height: 90%;
+    background-color: #3b82f6;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+}
+
+.deco-chart .b5 {
+    height: 60%;
+    background-color: rgba(59, 130, 246, 0.5);
+}
+
+/* Déco Carte Points */
+.deco-map {
+    position: relative;
+    width: 150px;
+}
+
+.map-dot {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background-color: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #10b981;
+}
+
+.deco-map .d1 {
+    bottom: 10px;
+    left: 10px;
+    opacity: 0.5;
+}
+
+.deco-map .d2 {
+    bottom: 40px;
+    left: 50px;
+    width: 8px;
+    height: 8px;
+}
+
+.deco-map .d3 {
+    bottom: 20px;
+    left: 90px;
+    opacity: 0.7;
+}
+
+.deco-map .d4 {
+    bottom: 55px;
+    left: 120px;
+    opacity: 0.4;
+}
+
+.deco-map .d5 {
+    bottom: 5px;
+    left: 140px;
+    width: 4px;
+    height: 4px;
+}
+
+
+/* Lien d'action au fond de la carte */
+.card-action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #cbd5e1;
+    transition: color 0.3s ease;
+}
+
+.bi-action-card.primary:hover .card-action-link {
+    color: #10b981;
+}
+
+.bi-action-card.secondary:hover .card-action-link {
+    color: #3b82f6;
+}
+
+
+/* --- SECTION SECONDAIRE (OUTILS & RACCOURCIS) --- */
+.bi-tools-section {
+    width: 100%;
+}
+
+.section-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #64748b;
+    margin: 0 0 1.25rem 0;
+    border-bottom: 1px solid #1e293b;
+    padding-bottom: 0.75rem;
+}
+
+.bi-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+.bi-tool-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: #111418;
+    border: 1px solid #1e293b;
+    padding: 1.25rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.bi-tool-card:hover:not(.disabled) {
+    border-color: #475569;
+    background-color: #151a21;
+    transform: translateY(-2px);
+}
+
+.bi-tool-card.admin:hover {
+    border-color: #f59e0b;
+}
+
+.bi-tool-card.quick-link:hover {
+    border-color: #8b5cf6;
+}
+
+.bi-tool-card.disabled {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.tool-icon {
+    color: #94a3b8;
+    background-color: #0f172a;
+    padding: 0.75rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #1e293b;
+}
+
+.bi-tool-card.admin .tool-icon {
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.bi-tool-card.quick-link .tool-icon {
+    color: #8b5cf6;
+    border-color: rgba(139, 92, 246, 0.2);
+}
+
+.tool-text h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.tool-text span {
+    font-size: 0.7rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+    .bi-tools-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .bi-home-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .hero-data-status {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .status-separator {
+        display: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .bi-home-container {
+        padding: 1.5rem;
+    }
+
+    .hero-title {
+        font-size: 2.2rem;
+    }
+
+    .bi-tools-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
