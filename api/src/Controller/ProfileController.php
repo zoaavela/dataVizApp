@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -26,20 +27,35 @@ class ProfileController extends AbstractController
     }
 
     #[Route('', name: 'api_profile_update', methods: ['PUT'])]
-    public function update(Request $request, EntityManagerInterface $em, #[CurrentUser] User $user): JsonResponse
-    {
+    public function update(
+        Request $request,
+        EntityManagerInterface $em,
+        #[CurrentUser] User $user,
+        UserPasswordHasherInterface $passwordHasher
+    ): JsonResponse {
         $data = json_decode($request->getContent(), true);
 
         if (empty($data)) {
             return $this->json(['error' => 'Aucune donnée envoyée'], 400);
         }
 
-        if (isset($data['nom'])) {
+        // 1. Mise à jour des informations classiques (Nom/Prénom)
+        if (isset($data['nom']))
             $user->setNom($data['nom']);
-        }
-
-        if (isset($data['prenom'])) {
+        if (isset($data['prenom']))
             $user->setPrenom($data['prenom']);
+
+        // 2. Gestion sécurisée du changement de mot de passe
+        if (isset($data['newPassword']) && !empty($data['newPassword'])) {
+
+            // Vérification du mot de passe actuel
+            if (!isset($data['currentPassword']) || !$passwordHasher->isPasswordValid($user, $data['currentPassword'])) {
+                return $this->json(['error' => 'Le mot de passe actuel est incorrect.'], 403);
+            }
+
+            // Hachage et enregistrement du nouveau mot de passe
+            $hashedPassword = $passwordHasher->hashPassword($user, $data['newPassword']);
+            $user->setPassword($hashedPassword);
         }
 
         $em->flush();
@@ -59,7 +75,6 @@ class ProfileController extends AbstractController
     {
         $em->remove($user);
         $em->flush();
-
         return $this->json(['message' => 'Compte supprimé définitivement']);
     }
 }
