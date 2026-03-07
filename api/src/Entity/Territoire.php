@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\TerritoireRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups; // Correct pour Symfony 7+ (Annotation n'existe plus)
 
@@ -12,19 +14,19 @@ class Territoire
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['territoire:read', 'module:quadrant', 'module:age', 'module:beton', 'module:thermique', 'module:logement', 'module:carte'])]
+    #[Groups(['territoire:read', 'module:quadrant', 'module:age', 'module:thermique', 'module:logement', 'module:carte', 'module:chomage', 'module:vacancy'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['territoire:read', 'module:quadrant', 'module:age', 'module:beton', 'module:thermique', 'module:logement', 'module:carte'])]
+    #[Groups(['territoire:read', 'module:quadrant', 'module:age', 'module:thermique', 'module:logement', 'module:carte', 'module:chomage', 'module:vacancy'])]
     private ?string $nom = null;
 
     #[ORM\Column(length: 5)]
-    #[Groups(['territoire:read', 'module:quadrant'])]
+    #[Groups(['territoire:read', 'module:quadrant', 'module:age', 'module:thermique', 'module:logement', 'module:carte', 'module:chomage', 'module:vacancy'])]
     private ?string $code = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['module:quadrant', 'module:carte'])]
+    #[Groups(['module:quadrant', 'module:age', 'module:thermique', 'module:logement', 'module:carte', 'module:chomage', 'module:vacancy'])]
     private ?string $region = null;
 
     // --- COORDONNÉES GPS (Points) ---
@@ -53,16 +55,30 @@ class Territoire
     private ?IndicateurDemographie $demographie = null;
 
     #[ORM\OneToOne(mappedBy: 'territoire', cascade: ['persist', 'remove'])]
-    #[Groups(['module:beton'])]
-    private ?IndicateurUrbanisme $urbanisme = null;
-
-    #[ORM\OneToOne(mappedBy: 'territoire', cascade: ['persist', 'remove'])]
     #[Groups(['module:thermique'])]
     private ?IndicateurEnergie $energie = null;
 
     #[ORM\OneToOne(mappedBy: 'territoire', cascade: ['persist', 'remove'])]
     #[Groups(['module:logement', 'module:carte'])]
     private ?IndicateurLogement $logement = null;
+
+    /**
+     * @var Collection<int, IndicateurVacancy>
+     */
+    #[ORM\OneToMany(targetEntity: IndicateurVacancy::class, mappedBy: 'territoire')]
+    private Collection $indicateurVacancies;
+
+    /**
+     * @var Collection<int, IndicateurChomage>
+     */
+    #[ORM\OneToMany(targetEntity: IndicateurChomage::class, mappedBy: 'territoire')]
+    private Collection $indicateurChomages;
+
+    public function __construct()
+    {
+        $this->indicateurVacancies = new ArrayCollection();
+        $this->indicateurChomages = new ArrayCollection();
+    }
 
     // --- GETTERS & SETTERS ---
 
@@ -163,22 +179,6 @@ class Territoire
         return $this;
     }
 
-    public function getUrbanisme(): ?IndicateurUrbanisme
-    {
-        return $this->urbanisme;
-    }
-    public function setUrbanisme(?IndicateurUrbanisme $urbanisme): static
-    {
-        if ($urbanisme === null && $this->urbanisme !== null) {
-            $this->urbanisme->setTerritoire(null);
-        }
-        if ($urbanisme !== null && $urbanisme->getTerritoire() !== $this) {
-            $urbanisme->setTerritoire($this);
-        }
-        $this->urbanisme = $urbanisme;
-        return $this;
-    }
-
     public function getEnergie(): ?IndicateurEnergie
     {
         return $this->energie;
@@ -208,6 +208,66 @@ class Territoire
             $logement->setTerritoire($this);
         }
         $this->logement = $logement;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, IndicateurVacancy>
+     */
+    public function getIndicateurVacancies(): Collection
+    {
+        return $this->indicateurVacancies;
+    }
+
+    public function addIndicateurVacancy(IndicateurVacancy $indicateurVacancy): static
+    {
+        if (!$this->indicateurVacancies->contains($indicateurVacancy)) {
+            $this->indicateurVacancies->add($indicateurVacancy);
+            $indicateurVacancy->setTerritoire($this);
+        }
+
+        return $this;
+    }
+
+    public function removeIndicateurVacancy(IndicateurVacancy $indicateurVacancy): static
+    {
+        if ($this->indicateurVacancies->removeElement($indicateurVacancy)) {
+            // set the owning side to null (unless already changed)
+            if ($indicateurVacancy->getTerritoire() === $this) {
+                $indicateurVacancy->setTerritoire(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, IndicateurChomage>
+     */
+    public function getIndicateurChomages(): Collection
+    {
+        return $this->indicateurChomages;
+    }
+
+    public function addIndicateurChomage(IndicateurChomage $indicateurChomage): static
+    {
+        if (!$this->indicateurChomages->contains($indicateurChomage)) {
+            $this->indicateurChomages->add($indicateurChomage);
+            $indicateurChomage->setTerritoire($this);
+        }
+
+        return $this;
+    }
+
+    public function removeIndicateurChomage(IndicateurChomage $indicateurChomage): static
+    {
+        if ($this->indicateurChomages->removeElement($indicateurChomage)) {
+            // set the owning side to null (unless already changed)
+            if ($indicateurChomage->getTerritoire() === $this) {
+                $indicateurChomage->setTerritoire(null);
+            }
+        }
+
         return $this;
     }
 }

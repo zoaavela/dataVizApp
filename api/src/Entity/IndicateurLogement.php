@@ -75,10 +75,14 @@ class IndicateurLogement
     {
         return $this->territoire ? $this->territoire->getId() : null;
     }
-    public function setTerritoire(Territoire $territoire): static
+    public function setTerritoire(?Territoire $territoire): static
     {
         $this->territoire = $territoire;
 
         return $this;
+    }
+    public function getTerritoire(): ?Territoire
+    {
+        return $this->territoire;
     }
 }

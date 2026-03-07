@@ -77,7 +77,7 @@ class IndicateurEconomie
         return $this->territoire;
     }
 
-    public function setTerritoire(Territoire $territoire): static
+    public function setTerritoire(?Territoire $territoire): static
     {
         $this->territoire = $territoire;
 
