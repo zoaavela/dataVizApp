@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Shield, AlertTriangle, LogOut, Trash2 } from 'lucide-react';
 import { getUserProfile, updateUserProfile, logoutUser, deleteUserProfile } from '../../services/profileService';
+import LogoLoader from '../LogoLoader/LogoLoader';
 import './Profil.css';
 
 export default function Profil() {
@@ -89,7 +90,7 @@ export default function Profil() {
         }
     };
 
-    if (isLoading) return <div className="profil-loader">Chargement...</div>;
+    if (isLoading) return <LogoLoader text="Chargement du profil..." />;
 
     return (
         <div className="profil-container">

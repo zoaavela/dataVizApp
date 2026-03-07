@@ -8,8 +8,8 @@ export const getAgeData = () => {
     return apiFetch('/territoires/age', { method: 'GET' });
 };
 
-export const getBetonData = () => {
-    return apiFetch('/territoires/beton', { method: 'GET' });
+export const getChomageData = () => {
+    return apiFetch('/territoires/chomage', { method: 'GET' });
 };
 
 export const getThermiqueData = () => {
@@ -18,5 +18,9 @@ export const getThermiqueData = () => {
 
 export const getLogementData = () => {
     return apiFetch('/territoires/logement', { method: 'GET' });
+};
+
+export const getVacancyData = () => {
+    return apiFetch('/territoires/vacancy', { method: 'GET' });
 };
 

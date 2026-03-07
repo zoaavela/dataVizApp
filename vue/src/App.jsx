@@ -6,7 +6,6 @@ import Layout from './component/Layout/Layout';
 import Carte from './component/Carte/Carte';
 import Quadrant from './component/Quadrant/Quadrant';
 import Modules from './component/Modules/Modules';
-import Beton from './component/Beton/Beton';
 import Logement from './component/Logement/Logement';
 import Thermique from './component/Thermique/Thermique';
 import Demographie from './component/Demographie/Demographie';
@@ -15,7 +14,8 @@ import Profil from './component/Profil/Profil';
 import Register from './component/Register/Register';
 import Home from './component/Home/Home';
 import Import from './component/Import/Import';
-import Miroir from './component/Miroir/Miroir';
+import Chomage from './component/Chomage/Chomage';
+import House from './component/House/House';
 
 const ProtectedRoute = ({ user, children }) => {
   if (!user) {
@@ -55,11 +55,11 @@ export default function App() {
 
           <Route path="/modules" element={<Modules />} />
           <Route path="/quadrant" element={<Quadrant />} />
-          <Route path="/beton" element={<Beton />} />
+          <Route path="/house" element={<House />} />
           <Route path="/demographie" element={<Demographie />} />
           <Route path="/logement" element={<Logement />} />
           <Route path="/thermique" element={<Thermique />} />
-          <Route path="/miroir" element={<Miroir />} />
+          <Route path="/chomage" element={<Chomage />} />
 
           <Route path="/admin/import" element={
             <AdminRoute user={user}>

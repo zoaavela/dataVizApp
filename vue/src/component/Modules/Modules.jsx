@@ -35,11 +35,11 @@ export default function ModulesSpace() {
             accentColor: '#3b82f6'
         },
         {
-            id: 'beton',
-            title: 'Le Paradoxe du Béton',
+            id: 'chomage',
+            title: 'Le Chômage',
             description: 'L\'effort de construction est-il vraiment aligné avec la dynamique de population locale ? Analysez le risque de tension immobilière.',
             icon: Map,
-            path: '/beton',
+            path: '/chomage',
             accentColor: '#4ade80'
         },
         {
@@ -71,7 +71,7 @@ export default function ModulesSpace() {
             title: 'Le Miroir National',
             description: 'Benchmark territorial : situez instantanément un département par rapport à la moyenne nationale sur 5 indicateurs clés.',
             icon: Target,
-            path: '/miroir',
+            path: '/house',
             accentColor: '#2dd4bf'
         }
     ];
