@@ -1,3 +1,4 @@
+// src/services/authService.js
 import { apiFetch } from './api';
 
 export const login = async (email, password) => {
@@ -7,9 +8,14 @@ export const login = async (email, password) => {
         body: JSON.stringify({ email, password })
     });
 
-    if (!response.ok) throw new Error('Erreur connexion');
+    if (!response.ok) throw new Error('Erreur de connexion');
 
     const data = await response.json();
+
+    if (data.token) {
+        localStorage.setItem('token', data.token);
+    }
+
     return data;
 };
 
@@ -18,19 +24,4 @@ export const register = (userData) => {
         method: 'POST',
         body: JSON.stringify(userData)
     });
-};
-
-export const getProfile = () => {
-    return apiFetch('/profile', { method: 'GET' });
-};
-
-export const updateProfile = (userData) => {
-    return apiFetch('/profile', {
-        method: 'PUT',
-        body: JSON.stringify(userData)
-    });
-};
-
-export const deleteProfile = () => {
-    return apiFetch('/profile', { method: 'DELETE' });
 };

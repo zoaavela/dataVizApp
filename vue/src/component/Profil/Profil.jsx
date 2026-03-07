@@ -13,19 +13,19 @@ export default function Profil() {
 
     useEffect(() => {
         const loadProfile = async () => {
+            const localUser = JSON.parse(localStorage.getItem('user') || '{}');
+            if (localUser.email) {
+                setUserData({ nom: localUser.nom || '', prenom: localUser.prenom || '', email: localUser.email || '' });
+            }
+
             try {
                 const data = await getUserProfile();
-                setUserData({
-                    nom: data.nom || '',
-                    prenom: data.prenom || '',
-                    email: data.email || ''
-                });
-            } catch (error) {
-                if (error.response && error.response.status === 401) {
-                    navigate('/login');
-                } else {
-                    setStatusMessage({ type: 'error', text: 'Impossible de charger les données du profil.' });
+                if (data && data.email) {
+                    setUserData({ nom: data.nom || '', prenom: data.prenom || '', email: data.email || '' });
+                    localStorage.setItem('user', JSON.stringify({ ...localUser, ...data }));
                 }
+            } catch (error) {
+                if (error.code === 401) navigate('/login');
             } finally {
                 setIsLoading(false);
             }
@@ -40,7 +40,7 @@ export default function Profil() {
         e.preventDefault();
         try {
             await updateUserProfile({ nom: userData.nom, prenom: userData.prenom });
-            setStatusMessage({ type: 'success', text: 'Vos informations ont été mises à jour.' });
+            setStatusMessage({ type: 'success', text: 'Informations mises à jour.' });
         } catch (error) {
             setStatusMessage({ type: 'error', text: 'Erreur lors de la sauvegarde.' });
         }
@@ -50,54 +50,57 @@ export default function Profil() {
     const handleSavePassword = async (e) => {
         e.preventDefault();
         if (passwords.new !== passwords.confirm) {
-            setStatusMessage({ type: 'error', text: 'Les mots de passe ne correspondent pas.' });
-            setTimeout(() => setStatusMessage({ type: '', text: '' }), 4000);
+            setStatusMessage({ type: 'error', text: 'Les nouveaux mots de passe ne correspondent pas.' });
             return;
         }
         try {
-            await updateUserProfile({ password: passwords.new });
+            await updateUserProfile({
+                currentPassword: passwords.current,
+                newPassword: passwords.new
+            });
             setPasswords({ current: '', new: '', confirm: '' });
             setStatusMessage({ type: 'success', text: 'Mot de passe modifié avec succès.' });
         } catch (error) {
-            setStatusMessage({ type: 'error', text: 'Erreur lors de la modification.' });
+            setStatusMessage({
+                type: 'error',
+                text: error.error || 'Mot de passe actuel incorrect.'
+            });
         }
         setTimeout(() => setStatusMessage({ type: '', text: '' }), 4000);
     };
 
     const handleLogout = async () => {
-        try { await logoutUser(); navigate('/login'); }
-        catch (error) { navigate('/login'); }
+        try { await logoutUser(); } catch (e) { }
+        finally {
+            localStorage.clear();
+            navigate('/login');
+        }
     };
 
     const handleDeleteAccount = async () => {
         if (window.confirm("Voulez-vous vraiment supprimer votre compte ? Cette action est irréversible.")) {
             try {
                 await deleteUserProfile();
-                navigate('/register');
+                localStorage.clear();
+                navigate('/login');
             } catch (error) {
-                setStatusMessage({ type: 'error', text: 'Impossible de supprimer le compte.' });
-                setTimeout(() => setStatusMessage({ type: '', text: '' }), 4000);
+                setStatusMessage({ type: 'error', text: 'Erreur lors de la suppression du compte.' });
             }
         }
     };
 
-    if (isLoading) return <div className="profil-loader">Chargement des données...</div>;
+    if (isLoading) return <div className="profil-loader">Chargement...</div>;
 
     return (
         <div className="profil-container">
             <header className="profil-header">
-                <h1 className="profil-title">Paramètres du profil</h1>
-                <p className="profil-subtitle">Gérez vos informations personnelles et votre sécurité</p>
+                <h1 className="profil-title">Mon Profil</h1>
                 <div className="profil-email-badge">{userData.email}</div>
             </header>
 
-            {statusMessage.text && (
-                <div className={`profil-alert ${statusMessage.type}`}>
-                    {statusMessage.text}
-                </div>
-            )}
+            {statusMessage.text && <div className={`profil-alert ${statusMessage.type}`}>{statusMessage.text}</div>}
 
-            {/* CARTE 1 : IDENTITÉ */}
+            {/* SECTION INFORMATIONS */}
             <div className="profil-card">
                 <div className="profil-card-header">
                     <User className="profil-icon" size={20} />
@@ -115,48 +118,48 @@ export default function Profil() {
                         </div>
                     </div>
                     <div className="profil-form-actions">
-                        <button type="submit" className="profil-btn btn-primary">Enregistrer les modifications</button>
+                        <button type="submit" className="profil-btn btn-primary">Sauvegarder</button>
                     </div>
                 </form>
             </div>
 
-            {/* CARTE 2 : SÉCURITÉ */}
+            {/* SECTION SÉCURITÉ */}
             <div className="profil-card">
                 <div className="profil-card-header">
                     <Shield className="profil-icon" size={20} />
-                    <h2>Sécurité du compte</h2>
+                    <h2>Sécurité</h2>
                 </div>
                 <form onSubmit={handleSavePassword} className="profil-form">
                     <div className="profil-form-group">
                         <label>Mot de passe actuel</label>
-                        <input type="password" name="current" value={passwords.current} onChange={handlePasswordChange} placeholder="••••••••" />
+                        <input type="password" name="current" value={passwords.current} onChange={handlePasswordChange} required />
                     </div>
                     <div className="profil-form-row">
                         <div className="profil-form-group">
                             <label>Nouveau mot de passe</label>
-                            <input type="password" name="new" value={passwords.new} onChange={handlePasswordChange} placeholder="••••••••" required />
+                            <input type="password" name="new" value={passwords.new} onChange={handlePasswordChange} required />
                         </div>
                         <div className="profil-form-group">
                             <label>Confirmation</label>
-                            <input type="password" name="confirm" value={passwords.confirm} onChange={handlePasswordChange} placeholder="••••••••" required />
+                            <input type="password" name="confirm" value={passwords.confirm} onChange={handlePasswordChange} required />
                         </div>
                     </div>
                     <div className="profil-form-actions">
-                        <button type="submit" className="profil-btn btn-secondary">Mettre à jour le mot de passe</button>
+                        <button type="submit" className="profil-btn btn-secondary">Changer le mot de passe</button>
                     </div>
                 </form>
             </div>
 
-            {/* CARTE 3 : DANGER */}
+            {/* SECTION DANGER */}
             <div className="profil-card danger-zone">
-                <div className="profil-card-header danger-header">
+                <div className="profil-card-header">
                     <AlertTriangle className="profil-icon" size={20} />
                     <h2>Zone de danger</h2>
                 </div>
-                <p className="danger-text">Ces actions sont immédiates. Assurez-vous d'avoir sauvegardé vos travaux avant de procéder.</p>
+                <p className="danger-text">Actions irréversibles. Soyez prudent.</p>
                 <div className="profil-actions-row">
                     <button onClick={handleLogout} className="profil-btn btn-outline">
-                        <LogOut size={16} /> Se déconnecter
+                        <LogOut size={16} /> Déconnexion
                     </button>
                     <button onClick={handleDeleteAccount} className="profil-btn btn-danger">
                         <Trash2 size={16} /> Supprimer le compte

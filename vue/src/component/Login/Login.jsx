@@ -1,6 +1,6 @@
-// Login.jsx
+// src/pages/Login/Login.jsx
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { login } from "../../services/authService";
 import logo from '../../assets/logo3.png';
 import sideImage from '../../assets/login-side.svg';
@@ -21,29 +21,27 @@ export default function Login({ setUser }) {
         try {
             const data = await login(email, password);
 
-            // 1. SAUVEGARDE DU TOKEN (L'élément manquant)
-            // Vérifie si ton API renvoie data.token ou data.access_token
             if (data.token) {
                 localStorage.setItem('token', data.token);
             }
 
             const userData = {
-                email: data.user.email,
-                roles: data.user.roles,
-                nom: data.user.nom,
-                prenom: data.user.prenom
+                email: data.user?.email,
+                roles: data.user?.roles,
+                nom: data.user?.nom,
+                prenom: data.user?.prenom
             };
 
             if (setUser) {
                 setUser(userData);
             }
 
-            // 2. Sauvegarde de l'objet utilisateur pour l'affichage
             localStorage.setItem('user', JSON.stringify(userData));
 
             navigate('/profil');
         } catch (err) {
-            setError(err.message || 'Email ou mot de passe incorrect.');
+            // Si l'API renvoie un JSON d'erreur, on tente de l'afficher
+            setError(err.message || err.error || 'Email ou mot de passe incorrect.');
         } finally {
             setIsLoading(false);
         }
@@ -53,7 +51,6 @@ export default function Login({ setUser }) {
         <div className="auth-split-layout">
             <div className="auth-split-container">
 
-                {/* L'image est passée en style inline ici */}
                 <div className="auth-image-side" style={{ backgroundImage: `url(${sideImage})` }}>
                     <div className="auth-image-overlay">
                     </div>
@@ -106,14 +103,21 @@ export default function Login({ setUser }) {
                         >
                             {isLoading ? 'Authentification...' : 'Se connecter'}
                         </button>
-                    </form>
 
-                    <div className="auth-footer">
-                        <span className="auth-footer-text">Vous n'avez pas encore de compte ?</span>
-                        <Link to="/register" className="auth-link">
-                            Créer un compte
-                        </Link>
-                    </div>
+                        <button
+                            type="button"
+                            onClick={() => navigate('/carte')}
+                            className="auth-submit-btn"
+                            style={{
+                                marginTop: '0.75rem',
+                                backgroundColor: 'transparent',
+                                color: '#cbd5e1',
+                                border: '1px solid #475569'
+                            }}
+                        >
+                            Continuer en tant qu'invité
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
