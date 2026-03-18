@@ -1,0 +1,231 @@
+/* --- LANDING PAGE : LAYOUT GLOBAL --- */
+.landing-root {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background-color: #000000;
+    color: #ffffff;
+    font-family: 'Inter', -apple-system, sans-serif;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* Permet le défilement */
+    scroll-behavior: smooth;
+    box-sizing: border-box;
+}
+
+/* --- SCÈNE 3D --- */
+.landing-bg-spline {
+    position: fixed;
+    /* Reste fixe au défilement */
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.landing-gradient {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.5) 50%, rgba(0, 0, 0, 0.8) 100%);
+    z-index: 1;
+}
+
+/* --- EN-TÊTE --- */
+.landing-top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 3rem;
+    box-sizing: border-box;
+    z-index: 10;
+}
+
+.landing-logo {
+    width: 32px;
+    height: auto;
+    filter: grayscale(1) brightness(1.5);
+}
+
+.landing-brand {
+    font-size: 1.1rem;
+    font-weight: 200;
+    letter-spacing: 0.6em;
+    color: #ffffff;
+}
+
+/* --- ZONE DE CONTENU --- */
+.landing-content-area {
+    position: relative;
+    z-index: 5;
+    padding: 12rem 3rem 6rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    box-sizing: border-box;
+}
+
+.landing-main-block {
+    display: flex;
+    flex-direction: column;
+    gap: 10rem;
+    /* Espacement entre le texte principal et les fonctionnalités */
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Texte principal */
+.landing-text-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 800px;
+}
+
+.landing-headline {
+    font-size: 4rem;
+    font-weight: 200;
+    margin: 0 0 2rem 0;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: #ffffff;
+}
+
+.landing-sub-headline {
+    font-size: 1.2rem;
+    color: #737373;
+    margin: 0 0 4rem 0;
+    max-width: 600px;
+    line-height: 1.6;
+    font-weight: 300;
+}
+
+/* Boutons d'action */
+.landing-button-group {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    /* Empêche le débordement */
+}
+
+.btn-glass-primary,
+.btn-glass-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 200px;
+    padding: 1.2rem 2.5rem;
+    font-size: 0.9rem;
+}
+
+/* --- NOUVELLE SECTION : POINTS FORTS --- */
+.landing-features-section {
+    width: 100%;
+}
+
+.landing-features-title {
+    font-size: 1.5rem;
+    font-weight: 200;
+    color: #ffffff;
+    margin: 0 0 4rem 0;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: left;
+}
+
+.landing-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.landing-feature-card {
+    background-color: #000000;
+    border: 1px solid #1a1a1a;
+    border-radius: 4px;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+.landing-feature-card:hover {
+    border-color: #333333;
+}
+
+.landing-feature-icon {
+    color: #737373;
+}
+
+.landing-feature-name {
+    font-size: 1.2rem;
+    font-weight: 300;
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.landing-feature-text {
+    font-size: 0.9rem;
+    color: #737373;
+    margin: 0;
+    line-height: 1.6;
+    font-weight: 300;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 1200px) {
+    .landing-headline {
+        font-size: 3.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .landing-top-bar {
+        padding: 2rem;
+    }
+
+    .landing-content-area {
+        padding: 8rem 2rem 4rem;
+    }
+
+    .landing-headline {
+        font-size: 2.5rem;
+    }
+
+    .landing-sub-headline {
+        font-size: 1rem;
+        margin-bottom: 3rem;
+    }
+
+    .landing-button-group {
+        gap: 1rem;
+    }
+
+    .btn-glass-primary,
+    .btn-glass-secondary {
+        padding: 1rem 2rem;
+        min-width: 180px;
+    }
+
+    .landing-main-block {
+        gap: 6rem;
+    }
+
+    .landing-features-title {
+        font-size: 1.2rem;
+        margin-bottom: 3rem;
+    }
+
+    .landing-feature-card {
+        padding: 2rem;
+    }
+}
