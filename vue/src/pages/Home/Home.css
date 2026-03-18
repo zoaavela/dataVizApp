@@ -1,0 +1,213 @@
+/* --- HOME PAGE --- */
+.bi-home-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2.5rem 3rem;
+    font-family: var(--font-main);
+    color: var(--text-primary);
+    position: relative;
+    z-index: 1;
+}
+
+/* --- HERO SECTION --- */
+.bi-hero-section {
+    margin-bottom: 2.5rem;
+    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 200;
+    margin: 0;
+    letter-spacing: -0.04em;
+    color: var(--text-primary);
+    line-height: 1.1;
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin: 0;
+    font-weight: 300;
+}
+
+
+
+/* --- ACTION GRID (BENTO STYLE) --- */
+.bi-home-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.bi-action-card {
+    position: relative;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sharp);
+    padding: 1.8rem;
+    cursor: pointer;
+    overflow: hidden;
+    transition: var(--transition-smooth);
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+    box-shadow: var(--shadow-premium);
+    backdrop-filter: var(--glass-blur);
+}
+
+.bi-action-card:hover {
+    border-color: var(--accent-green);
+    transform: translateY(-4px);
+    background-color: var(--bg-elevation);
+    box-shadow: 0 10px 40px var(--accent-green-glow);
+}
+
+.card-header-icon {
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    transition: var(--transition-smooth);
+}
+
+.bi-action-card:hover .card-header-icon {
+    color: var(--accent-green);
+}
+
+.card-title {
+    font-size: 1.4rem;
+    font-weight: 300;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.02em;
+}
+
+.card-desc {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin: 0 0 1rem 0;
+    font-weight: 300;
+}
+
+/* Action Link */
+.card-action-link {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    transition: var(--transition-smooth);
+}
+
+.bi-action-card:hover .card-action-link {
+    color: var(--accent-green);
+}
+
+/* --- TOOLS SECTION --- */
+.bi-tools-section {
+    width: 100%;
+}
+
+.section-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    margin: 0 0 2rem 0;
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 1rem;
+}
+
+.bi-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+}
+
+.bi-tool-card {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-sharp);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    backdrop-filter: var(--glass-blur);
+}
+
+.bi-tool-card:hover:not(.disabled) {
+    border-color: var(--accent-green);
+    background-color: var(--accent-green-glow);
+    transform: translateY(-2px);
+}
+
+.tool-icon {
+    color: var(--text-muted);
+    background-color: var(--bg-elevation);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-subtle);
+    transition: var(--transition-smooth);
+}
+
+.bi-tool-card:hover .tool-icon {
+    color: var(--accent-green);
+    border-color: var(--accent-green);
+}
+
+.tool-text h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: var(--text-primary);
+    letter-spacing: 0.02em;
+}
+
+.tool-text span {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1200px) {
+    .bi-tools-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .bi-home-container {
+        padding: 2rem;
+    }
+
+    .hero-title {
+        font-size: 3rem;
+    }
+
+    .bi-home-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+
+    .bi-tools-grid {
+        grid-template-columns: 1fr;
+    }
+}
