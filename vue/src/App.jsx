@@ -1,32 +1,36 @@
+// --- App.jsx ---
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useState } from 'react';
 
-import Login from './component/Login/Login';
-import Layout from './component/Layout/Layout';
-import Carte from './component/Carte/Carte';
-import Quadrant from './component/Quadrant/Quadrant';
-import Modules from './component/Modules/Modules';
-import Logement from './component/Logement/Logement';
-import Thermique from './component/Thermique/Thermique';
-import Demographie from './component/Demographie/Demographie';
-import Propos from './component/Propos/Propos';
-import Profil from './component/Profil/Profil';
-import Register from './component/Register/Register';
-import Home from './component/Home/Home';
-import Import from './component/Import/Import';
-import Chomage from './component/Chomage/Chomage';
-import House from './component/House/House';
+import Login from './pages/Login/Login';
+import Layout from './components/Layout/Layout';
+import Carte from './modules/Carte/Carte';
+import Quadrant from './modules/Quadrant/Quadrant';
+import Modules from './pages/Modules/Modules';
+import Logement from './modules/Logement/Logement';
+import Thermique from './modules/Thermique/Thermique';
+import Demographie from './modules/Demographie/Demographie';
+import Propos from './pages/Propos/Propos';
+import Profil from './pages/Profil/Profil';
+import Register from './pages/Register/Register';
+import Home from './pages/Home/Home';
+import Import from './pages/Import/Import';
+import Chomage from './modules/Chomage/Chomage';
+import House from './modules/House/House';
+import SuperAdminDashboard from './pages/SuperAdminDashboard/SuperAdminDashboard';
+import LandingPage from './pages/LandingPage/LandingPage';
+import SessionManager from './components/SessionManager/SessionManager';
 
-const ProtectedRoute = ({ user, children }) => {
-  if (!user) {
-    return <Navigate to="/login" replace />;
+const AdminRoute = ({ user, children }) => {
+  if (!user || (!user.roles?.includes("ROLE_ADMIN") && !user.roles?.includes("ROLE_SUPER_ADMIN"))) {
+    return <Navigate to="/" replace />;
   }
   return children;
 };
 
-const AdminRoute = ({ user, children }) => {
-  if (!user || !user.roles?.includes("ROLE_ADMIN")) {
-    return <Navigate to="/accueil" replace />;
+const SuperAdminRoute = ({ user, children }) => {
+  if (!user || !user.roles?.includes("ROLE_SUPER_ADMIN")) {
+    return <Navigate to="/" replace />;
   }
   return children;
 };
@@ -39,20 +43,18 @@ export default function App() {
 
   return (
     <BrowserRouter basename="/dataVizApp">
+
+      {/* AJOUT ICI : Le gestionnaire de session doit être rendu à l'intérieur du BrowserRouter */}
+      <SessionManager setUser={setUser} />
+
       <Routes>
-        <Route path="/" element={<Navigate to="/accueil" replace />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login setUser={setUser} />} />
         <Route path="/register" element={<Register />} />
 
-        <Route element={
-          <ProtectedRoute user={user}>
-            <Layout user={user} setUser={setUser} />
-          </ProtectedRoute>
-        }>
+        <Route element={<Layout user={user} setUser={setUser} />}>
           <Route path="/accueil" element={<Home user={user} />} />
-          <Route path="/profil" element={<Profil />} />
           <Route path="/carte" element={<Carte />} />
-
           <Route path="/modules" element={<Modules />} />
           <Route path="/quadrant" element={<Quadrant />} />
           <Route path="/house" element={<House />} />
@@ -60,6 +62,13 @@ export default function App() {
           <Route path="/logement" element={<Logement />} />
           <Route path="/thermique" element={<Thermique />} />
           <Route path="/chomage" element={<Chomage />} />
+          <Route path="/about" element={<Propos />} />
+
+          <Route path="/profil" element={
+            <AdminRoute user={user}>
+              <Profil />
+            </AdminRoute>
+          } />
 
           <Route path="/admin/import" element={
             <AdminRoute user={user}>
@@ -67,7 +76,11 @@ export default function App() {
             </AdminRoute>
           } />
 
-          <Route path="/about" element={<Propos />} />
+          <Route path="/super-admin/requests" element={
+            <SuperAdminRoute user={user}>
+              <SuperAdminDashboard />
+            </SuperAdminRoute>
+          } />
         </Route>
       </Routes>
     </BrowserRouter>
