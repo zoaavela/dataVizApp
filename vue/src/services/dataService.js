@@ -23,4 +23,3 @@ export const getLogementData = () => {
 export const getVacancyData = () => {
     return apiFetch('/territoires/vacancy', { method: 'GET' });
 };
-
