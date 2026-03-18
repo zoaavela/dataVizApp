@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = 'https://zoaavela.alwaysdata.net/api';
 
 export const apiFetch = async (endpoint, options = {}) => {
     const token = localStorage.getItem('token');
