@@ -1,0 +1,217 @@
+/* --- PROFIL COMPONENT --- */
+.profil-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 6rem 2rem;
+    font-family: var(--font-main);
+    color: var(--text-primary);
+    position: relative;
+    z-index: 1;
+}
+
+/* EN-TÊTE */
+.profil-header {
+    margin-bottom: 5rem;
+    border-left: 1px solid var(--border-medium);
+    padding-left: 2rem;
+}
+
+.profil-title {
+    font-size: 2.5rem;
+    font-weight: 200;
+    margin: 0;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+}
+
+.profil-email-badge {
+    display: inline-block;
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 300;
+}
+
+/* --- CARTES --- */
+.profil-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sharp);
+    padding: 3rem;
+    margin-bottom: 3rem;
+    box-shadow: var(--shadow-premium);
+    backdrop-filter: var(--glass-blur);
+}
+
+.profil-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    color: var(--text-primary);
+}
+
+.profil-card-header h2 {
+    font-size: 1.1rem;
+    font-weight: 400;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-primary);
+}
+
+/* --- FORMULAIRE --- */
+.profil-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.profil-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.profil-form-group label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+}
+
+.profil-form-group input {
+    background-color: var(--bg-elevation);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    padding: 1rem;
+    border-radius: var(--radius-sharp);
+    font-size: 0.9rem;
+    font-family: var(--font-main);
+    transition: var(--transition-smooth);
+}
+
+.profil-form-group input:focus {
+    outline: none;
+    border-color: var(--border-medium);
+    background-color: var(--bg-surface);
+}
+
+.profil-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+
+/* --- BOUTONS --- */
+.profil-btn {
+    padding: 0.8rem 1.5rem;
+    border-radius: var(--radius-sharp);
+    font-weight: 400;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: none;
+}
+
+.btn-primary {
+    background-color: var(--accent-color);
+    color: var(--bg-deep);
+}
+
+.btn-primary:hover {
+    background-color: transparent;
+    color: var(--accent-color);
+    box-shadow: inset 0 0 0 1px var(--accent-color);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+}
+
+.btn-secondary:hover {
+    border-color: var(--border-medium);
+    color: var(--text-primary);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-subtle);
+}
+
+.btn-outline:hover {
+    background-color: var(--bg-elevation);
+    color: var(--text-primary);
+    border-color: var(--border-medium);
+}
+
+.btn-danger {
+    background-color: transparent;
+    color: #ff5555;
+    border: 1px solid rgba(255, 0, 0, 0.1);
+}
+
+.btn-danger:hover {
+    background-color: rgba(255, 0, 0, 0.05);
+    border-color: rgba(255, 0, 0, 0.3);
+}
+
+/* --- ALERTES --- */
+.profil-alert {
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-sharp);
+    margin-bottom: 3rem;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 400;
+}
+
+.profil-alert.success {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
+}
+
+.profil-alert.error {
+    background: rgba(255, 0, 0, 0.05);
+    color: #ff5555;
+    border: 1px solid rgba(255, 0, 0, 0.1);
+}
+
+/* --- ZONE DE DANGER --- */
+.danger-zone {
+    border-color: rgba(255, 0, 0, 0.1);
+}
+
+.danger-text {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+    font-weight: 300;
+    line-height: 1.6;
+}
+
+.profil-actions-row {
+    display: flex;
+    gap: 1.5rem;
+}
+
+@media (max-width: 640px) {
+    .profil-form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .profil-actions-row {
+        flex-direction: column;
+    }
+}
