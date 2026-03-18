@@ -1,0 +1,92 @@
+/* --- PREMIUM LANDING LOADER --- */
+.landing-loader-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: #000000;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Transition de 1.2s très douce pour révéler la page en douceur */
+    transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.2s;
+    opacity: 1;
+    visibility: visible;
+}
+
+.landing-loader-overlay.fade-out {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.landing-loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3.5rem;
+}
+
+/* Effet de lueur (Glow) derrière le logo */
+.landing-loader-logo-glow {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.landing-loader-logo-glow::before {
+    content: '';
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: pulse-glow-green 2s infinite alternate ease-in-out;
+    z-index: 0;
+}
+
+.landing-loader-img {
+    width: 70px;
+    height: auto;
+    filter: grayscale(1) brightness(2);
+    position: relative;
+    z-index: 1;
+    /* Animation de rebond */
+    animation: bounce-logo 1.5s infinite;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes pulse-glow-green {
+    0% {
+        transform: scale(0.6);
+        opacity: 0.2;
+    }
+
+    100% {
+        transform: scale(1.4);
+        opacity: 1;
+    }
+}
+
+@keyframes bounce-logo {
+    0%, 100% {
+        transform: translateY(0) scaleY(1);
+        animation-timing-function: ease-in;
+    }
+    40% {
+        transform: translateY(-30px) scaleY(1.05);
+        animation-timing-function: ease-in;
+    }
+    50% {
+        transform: translateY(-30px) scaleY(1.05);
+        animation-timing-function: ease-out;
+    }
+    80% {
+        transform: translateY(0) scaleY(0.9);
+        animation-timing-function: ease-out;
+    }
+    90% {
+        transform: translateY(-5px) scaleY(1);
+        animation-timing-function: ease-in;
+    }
+}
