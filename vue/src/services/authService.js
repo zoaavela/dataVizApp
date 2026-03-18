@@ -1,4 +1,3 @@
-// src/services/authService.js
 import { apiFetch } from './api';
 
 export const login = async (email, password) => {
@@ -8,7 +7,10 @@ export const login = async (email, password) => {
         body: JSON.stringify({ email, password })
     });
 
-    if (!response.ok) throw new Error('Erreur de connexion');
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Erreur de connexion');
+    }
 
     const data = await response.json();
 
