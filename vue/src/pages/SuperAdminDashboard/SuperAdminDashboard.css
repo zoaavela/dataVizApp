@@ -1,0 +1,178 @@
+/* --- SUPER ADMIN PAGE : LAYOUT GLOBAL --- */
+.sa-dashboard-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 3rem;
+    background-color: #000000;
+    color: #ffffff;
+    font-family: 'Inter', -apple-system, sans-serif;
+    box-sizing: border-box;
+}
+
+/* --- EN-TÊTE --- */
+.sa-header {
+    border-bottom: 1px solid #111111;
+    padding-bottom: 2rem;
+    margin-bottom: 2rem;
+}
+
+.sa-main-title {
+    font-size: 2.25rem;
+    font-weight: 200;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+}
+
+.sa-main-subtitle {
+    font-size: 1rem;
+    color: #737373;
+    margin: 0;
+    font-weight: 300;
+}
+
+.sa-body-layout {
+    flex: 1;
+}
+
+/* --- ETAT VIDE --- */
+.sa-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 2rem;
+    border: 1px dashed #262626;
+    border-radius: 4px;
+    gap: 1.5rem;
+    text-align: center;
+}
+
+.sa-icon-muted {
+    color: #404040;
+}
+
+.sa-empty-text {
+    color: #737373;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* --- GRILLE ET CARTES --- */
+.sa-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+}
+
+.sa-card {
+    background-color: #000000;
+    border: 1px solid #1a1a1a;
+    border-radius: 4px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    transition: border-color 0.2s ease;
+}
+
+.sa-card:hover {
+    border-color: #333333;
+}
+
+.sa-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #111111;
+}
+
+.sa-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.sa-user-name {
+    font-size: 1.25rem;
+    font-weight: 300;
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.sa-user-email {
+    font-size: 0.85rem;
+    color: #737373;
+    margin: 0;
+}
+
+.sa-badge-pending {
+    display: inline-block;
+    background: transparent;
+    color: #a1a1aa;
+    padding: 0.25rem 0.5rem;
+    border-radius: 2px;
+    font-size: 0.7rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border: 1px solid #3f3f46;
+}
+
+/* --- BOUTONS D'ACTION --- */
+.sa-card-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.sa-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 2px;
+    font-size: 0.8rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: transparent;
+}
+
+.sa-btn-reject {
+    border: 1px solid #262626;
+    color: #737373;
+}
+
+.sa-btn-reject:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.sa-btn-approve {
+    border: 1px solid #3f3f46;
+    color: #e4e4e7;
+}
+
+.sa-btn-approve:hover {
+    background-color: #ffffff;
+    color: #000000;
+    border-color: #ffffff;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+    .sa-dashboard-wrapper {
+        padding: 1.5rem;
+    }
+
+    .sa-grid {
+        grid-template-columns: 1fr;
+    }
+}
