@@ -13,7 +13,7 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/profile')]
-#[IsGranted('ROLE_USER')]
+#[IsGranted('ROLE_ADMIN')] // <-- Seuls les Admins et Super Admins ont accès
 class ProfileController extends AbstractController
 {
     #[Route('', name: 'api_profile_show', methods: ['GET'])]
@@ -22,7 +22,8 @@ class ProfileController extends AbstractController
         return $this->json([
             'email' => $user->getUserIdentifier(),
             'nom' => $user->getNom(),
-            'prenom' => $user->getPrenom()
+            'prenom' => $user->getPrenom(),
+            'roles' => $user->getRoles()
         ]);
     }
 
@@ -39,21 +40,19 @@ class ProfileController extends AbstractController
             return $this->json(['error' => 'Aucune donnée envoyée'], 400);
         }
 
-        // 1. Mise à jour des informations classiques (Nom/Prénom)
-        if (isset($data['nom']))
+        if (isset($data['nom'])) {
             $user->setNom($data['nom']);
-        if (isset($data['prenom']))
+        }
+
+        if (isset($data['prenom'])) {
             $user->setPrenom($data['prenom']);
+        }
 
-        // 2. Gestion sécurisée du changement de mot de passe
         if (isset($data['newPassword']) && !empty($data['newPassword'])) {
-
-            // Vérification du mot de passe actuel
             if (!isset($data['currentPassword']) || !$passwordHasher->isPasswordValid($user, $data['currentPassword'])) {
                 return $this->json(['error' => 'Le mot de passe actuel est incorrect.'], 403);
             }
 
-            // Hachage et enregistrement du nouveau mot de passe
             $hashedPassword = $passwordHasher->hashPassword($user, $data['newPassword']);
             $user->setPassword($hashedPassword);
         }
@@ -68,13 +67,5 @@ class ProfileController extends AbstractController
                 'prenom' => $user->getPrenom()
             ]
         ]);
-    }
-
-    #[Route('', name: 'api_profile_delete', methods: ['DELETE'])]
-    public function delete(EntityManagerInterface $em, #[CurrentUser] User $user): JsonResponse
-    {
-        $em->remove($user);
-        $em->flush();
-        return $this->json(['message' => 'Compte supprimé définitivement']);
     }
 }

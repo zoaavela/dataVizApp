@@ -83,15 +83,29 @@ class ImportCsvCommand extends Command
                 $t = new Territoire();
                 $t->setNom($row[2]);
                 $t->setCode($row[1]);
-                $t->setRegion($row[4]);
+                if (isset($row[4])) {
+                    $t->setRegion($row[4]);
+                }
 
-                if (!empty($row[31])) {
-                    $centroid = json_decode($row[31], true);
-                    if ($centroid && isset($centroid['coordinates'])) {
-                        $t->setLng($centroid['coordinates'][0]);
-                        $t->setLat($centroid['coordinates'][1]);
+                // GEOM : Colonne 30 du fichier CSV
+                if (isset($row[30]) && !empty(trim($row[30]))) {
+                    $t->setGeom(trim($row[30]));
+                }
+
+                // CENTROID (lat, lng) : Colonne 31 du fichier CSV
+                if (isset($row[31]) && !empty(trim($row[31]))) {
+                    $centroidStr = trim($row[31]);
+
+                    // On sépare la chaîne au niveau de la virgule
+                    $coords = explode(',', $centroidStr);
+
+                    // Si on obtient bien 2 éléments (lat et lng)
+                    if (count($coords) >= 2) {
+                        $t->setLat((float) trim($coords[0]));
+                        $t->setLng((float) trim($coords[1]));
                     }
                 }
+
                 $this->em->persist($t);
 
                 // --- 2. ÉCONOMIE ---
@@ -133,7 +147,7 @@ class ImportCsvCommand extends Command
                 $chom->setTerritoire($t);
                 $this->em->persist($chom);
 
-                // --- 7. VACANCY (C'EST ICI QUE CA SE PASSE !) ---
+                // --- 7. VACANCY ---
                 $vac = new IndicateurVacancy();
                 $vac->setAnnee($annee);
                 $vac->setTaux($this->toFloat($row[17]));

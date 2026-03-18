@@ -107,7 +107,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __serialize(): array
     {
         $data = (array) $this;
-        $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
+        $data["\0" . self::class . "\0password"] = hash('crc32c', $this->password);
 
         return $data;
     }
@@ -132,6 +132,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPrenom(string $prenom): static
     {
         $this->prenom = $prenom;
+
+        return $this;
+    }
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $adminRequestStatus = null;
+
+    #[ORM\Column]
+    private ?bool $isSuperAdmin = false;
+
+    public function getAdminRequestStatus(): ?string
+    {
+        return $this->adminRequestStatus;
+    }
+
+    public function setAdminRequestStatus(?string $adminRequestStatus): static
+    {
+        $this->adminRequestStatus = $adminRequestStatus;
+
+        return $this;
+    }
+
+    public function isSuperAdmin(): ?bool
+    {
+        return $this->isSuperAdmin;
+    }
+
+    public function setSuperAdmin(bool $isSuperAdmin): static
+    {
+        $this->isSuperAdmin = $isSuperAdmin;
 
         return $this;
     }

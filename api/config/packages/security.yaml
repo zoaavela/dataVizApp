@@ -1,65 +1,39 @@
-# config/packages/security.yaml
 security:
-    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
-
-    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    
     providers:
         app_user_provider:
             entity:
                 class: App\Entity\User
                 property: email
 
+    role_hierarchy:
+        ROLE_ADMIN:       ROLE_USER
+        ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
+
     firewalls:
         dev:
-            pattern: ^/(_profiler|_wdt|assets|build)/
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
-        # 1. Firewall spécifique pour l'API (Ordre important : doit être AVANT main)
-        api:
-            pattern: ^/api
-            stateless: true   # Désactive PHPSESSID et les cookies pour l'API
-            
-            # Gestion du Login JSON pour récupérer le Token
+        login:
+            pattern: ^/api/login
+            stateless: true
             json_login:
-                check_path: api_login
-                username_path: email
-                password_path: password
-            
-            # Active la lecture du Token JWT (Bearer Token)
+                check_path: /api/login_check
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+        api:
+            pattern:   ^/api
+            stateless: true
             jwt: ~
 
-        # 2. Firewall principal (par défaut)
-        main:
-            lazy: true
-            provider: app_user_provider
-            
-            # Optionnel : permet aussi le logout classique
-            logout:
-                path: app_logout
-
-    # --- RÈGLES D'ACCÈS ---
-    # Symfony vérifie ces règles dans l'ordre (du plus précis au plus général)
     access_control:
-        # Routes publiques (nécessaires pour les invités et la connexion)
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/register, roles: PUBLIC_ACCESS }
-        
-        # On autorise l'accès aux données de la carte en public pour le mode "Invité"
-        # Adapte le path selon tes routes (ex: /api/territoires)
-        - { path: ^/api/carte, roles: PUBLIC_ACCESS } 
-
-        # Routes protégées
-        - { path: ^/api/profile, roles: ROLE_USER }
-        - { path: ^/api/admin, roles: ROLE_ADMIN }
-
-# Configuration spécifique pour les tests
-when@test:
-    security:
-        password_hashers:
-            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
-                algorithm: auto
-                cost: 4
-                time_cost: 3
-                memory_cost: 10
+        - { path: ^/api/territoires, roles: PUBLIC_ACCESS }
+        - { path: ^/api/profile, roles: ROLE_ADMIN }
+        - { path: ^/api/admin/import, roles: ROLE_ADMIN }
+        - { path: ^/api/super-admin/users, roles: ROLE_SUPER_ADMIN }
