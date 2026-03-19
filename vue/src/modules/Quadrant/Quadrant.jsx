@@ -14,6 +14,7 @@ import { getQuadrantData } from '../../services/dataService';
 import { getCarteData } from '../../services/territoireService';
 import './Quadrant.css';
 import LogoLoader from '../../components/LogoLoader/LogoLoader';
+import SyncErrorAlert from '../../components/SyncErrorAlert/SyncErrorAlert';
 
 ChartJS.register(LinearScale, CategoryScale, PointElement, LineElement, Tooltip, Legend, annotationPlugin);
 
@@ -57,7 +58,8 @@ const getProfileKey = (x, y) => {
 export default function QuadrantStrategique() {
     const [territoires, setTerritoires] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [apiError, setApiError] = useState(false);
+    const [apiError, setApiError] = useState(null);
+    const [retryTrigger, setRetryTrigger] = useState(0);
 
     const [selectedDept, setSelectedDept] = useState('');
     const [selectedRegion, setSelectedRegion] = useState('all');
@@ -67,10 +69,11 @@ export default function QuadrantStrategique() {
 
     useEffect(() => {
         const fetchDonnees = async () => {
+            setApiError(null);
             try {
                 const [indicateursRes, territoiresRes] = await Promise.all([
                     getQuadrantData(),
-                    getCarteData().catch(() => null)
+                    getCarteData()
                 ]);
 
                 await new Promise(resolve => setTimeout(resolve, 800));
@@ -114,13 +117,13 @@ export default function QuadrantStrategique() {
                 setTerritoires(donneesFormatees);
             } catch (error) {
                 console.error("Erreur critique d'assemblage:", error);
-                setApiError(true);
+                setApiError("Le serveur de données ne répond pas. Veuillez réessayer ultérieurement.");
             } finally {
                 setIsLoading(false);
             }
         };
         fetchDonnees();
-    }, []);
+    }, [retryTrigger]);
 
     const handleDeptChange = (e) => {
         setSelectedDept(e.target.value);
@@ -156,7 +159,6 @@ export default function QuadrantStrategique() {
         return uniques.sort((a, b) => a.nom.localeCompare(b.nom));
     }, [departementsFiltres]);
 
-    // CORRECTION CRITIQUE : L'historique et la sélection utilisent d.nom au lieu de d.id
     const deptHistory = useMemo(() => {
         if (!selectedDept) return [];
         return territoires
@@ -168,14 +170,12 @@ export default function QuadrantStrategique() {
         if (!selectedDept) return null;
         const matches = departementsFiltres.filter(t => t.nom === selectedDept);
         if (matches.length === 0) return null;
-        // On récupère l'année la plus récente par défaut pour le panneau d'infos
         return matches.sort((a, b) => parseInt(b.annee) - parseInt(a.annee))[0];
     }, [departementsFiltres, selectedDept]);
 
     const chartData = useMemo(() => {
         const datasets = [];
 
-        // 1. Dataset principal (Nuage de points)
         datasets.push({
             type: 'scatter',
             label: 'Territoires',
@@ -185,7 +185,6 @@ export default function QuadrantStrategique() {
                 if (!d) return;
                 const baseColor = PROFILES_INFO[d.profile].color;
 
-                // Utilisation de d.nom pour la correspondance
                 if (selectedDept) {
                     return d.nom === selectedDept ? baseColor : baseColor + '15';
                 }
@@ -210,7 +209,6 @@ export default function QuadrantStrategique() {
             order: 1
         });
 
-        // 2. Ligne de trajectoire si on sélectionne un département + "Toutes les années"
         if (selectedDept && selectedYear === 'all' && deptHistory.length > 1) {
             datasets.push({
                 type: 'line',
@@ -219,10 +217,10 @@ export default function QuadrantStrategique() {
                 borderColor: '#cbd5e1',
                 borderWidth: 2,
                 borderDash: [5, 5],
-                pointRadius: 0, // Les points sont gérés par le dataset scatter
+                pointRadius: 0,
                 fill: false,
                 tension: 0.2,
-                order: 2 // Ligne dessinée derrière les points
+                order: 2
             });
         }
 
@@ -293,7 +291,6 @@ export default function QuadrantStrategique() {
         ? PROFILES_INFO[activeDeptData.profile]
         : (activeFilter ? PROFILES_INFO[activeFilter] : null);
 
-    // Données pour le petit graphique temporel en bas à gauche
     const lineChartData = useMemo(() => {
         const color = currentDisplayInfo ? currentDisplayInfo.color : '#94a3b8';
         return {
@@ -366,7 +363,6 @@ export default function QuadrantStrategique() {
     const anneesUniques = [...new Set(territoires.map(t => t.annee))].filter(a => a !== 'Non défini').sort((a, b) => b - a);
 
     if (isLoading) return <LogoLoader text="Construction de la matrice..." />;
-    if (apiError) return <div className="bi-error-msg">Erreur de synchronisation avec la source de données.</div>;
 
     return (
         <div className="bi-dashboard-container">
@@ -398,7 +394,6 @@ export default function QuadrantStrategique() {
                     <label>Département Cible</label>
                     <select value={selectedDept} onChange={handleDeptChange}>
                         <option value="">Sélectionner un département...</option>
-                        {/* CORRECTION : value est d.nom au lieu de d.id */}
                         {departementsUniques.map(d => (
                             <option key={d.nom} value={d.nom}>{d.nom}</option>
                         ))}
@@ -406,81 +401,87 @@ export default function QuadrantStrategique() {
                 </div>
             </nav>
 
-            <div className="bi-main-content-split">
-                <div className="bi-adaptive-sidebar">
-                    <div className="bi-quadrant-toggles">
-                        {Object.values(PROFILES_INFO).map(prof => (
-                            <button
-                                key={prof.id}
-                                onClick={() => handleQuadrantClick(prof.id)}
-                                className={`bi-q-btn ${activeFilter === prof.id || (activeDeptData && activeDeptData.profile === prof.id) ? 'active' : ''}`}
-                                style={{ '--btn-color': prof.color }}
-                            >
-                                {prof.title}
-                            </button>
-                        ))}
+            {apiError ? (
+                <div style={{ padding: '2rem' }}>
+                    <SyncErrorAlert details={apiError} onRetry={() => setRetryTrigger(prev => prev + 1)} />
+                </div>
+            ) : (
+                <div className="bi-main-content-split">
+                    <div className="bi-adaptive-sidebar">
+                        <div className="bi-quadrant-toggles">
+                            {Object.values(PROFILES_INFO).map(prof => (
+                                <button
+                                    key={prof.id}
+                                    onClick={() => handleQuadrantClick(prof.id)}
+                                    className={`bi-q-btn ${activeFilter === prof.id || (activeDeptData && activeDeptData.profile === prof.id) ? 'active' : ''}`}
+                                    style={{ '--btn-color': prof.color }}
+                                >
+                                    {prof.title}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="bi-adaptive-card" style={{ borderLeftColor: currentDisplayInfo ? currentDisplayInfo.color : '#334155' }}>
+                            {currentDisplayInfo ? (
+                                <>
+                                    <div className="adaptive-header">
+                                        <h2 style={{ color: currentDisplayInfo.color }}>{currentDisplayInfo.title}</h2>
+                                    </div>
+
+                                    {activeDeptData && (
+                                        <div className="adaptive-dept-focus">
+                                            <h3>Focus : {activeDeptData.nom} {selectedYear === 'all' && `(${activeDeptData.annee})`}</h3>
+                                            <div className="adaptive-stats-grid">
+                                                <div className="adaptive-stat-box">
+                                                    <span className="stat-label">Taux de Pauvreté</span>
+                                                    <span className="stat-value">{activeDeptData.x.toFixed(1)}%</span>
+                                                </div>
+                                                <div className="adaptive-stat-box">
+                                                    <span className="stat-label">Solde Migratoire</span>
+                                                    <span className="stat-value">{activeDeptData.y > 0 ? '+' : ''}{activeDeptData.y.toFixed(1)}%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="adaptive-description">
+                                        <p>{currentDisplayInfo.desc}</p>
+                                    </div>
+
+                                    {selectedDept && deptHistory.length > 1 && (
+                                        <div className="adaptive-history-chart" style={{ height: '200px', marginTop: '1.5rem', borderTop: '1px dashed #334155', paddingTop: '1rem', display: 'flex', flexDirection: 'column' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', alignItems: 'center' }}>
+                                                <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' }}>Évolution Temporelle</span>
+                                                <div style={{ display: 'flex', gap: '1rem', fontSize: '0.65rem', textTransform: 'uppercase', fontWeight: '700' }}>
+                                                    <span style={{ color: '#64748b' }}>■ Pauvreté</span>
+                                                    <span style={{ color: currentDisplayInfo.color }}>■ Migration</span>
+                                                </div>
+                                            </div>
+                                            <div style={{ flex: 1, minHeight: 0 }}>
+                                                <Line data={lineChartData} options={lineChartOptions} />
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="adaptive-empty-state">
+                                    <h3>Analysez un profil</h3>
+                                    <p>Cliquez sur l'un des 4 profils au-dessus pour comprendre ses caractéristiques, ou sélectionnez un département spécifique pour voir son diagnostic détaillé.</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    <div className="bi-adaptive-card" style={{ borderLeftColor: currentDisplayInfo ? currentDisplayInfo.color : '#334155' }}>
-                        {currentDisplayInfo ? (
-                            <>
-                                <div className="adaptive-header">
-                                    <h2 style={{ color: currentDisplayInfo.color }}>{currentDisplayInfo.title}</h2>
-                                </div>
-
-                                {activeDeptData && (
-                                    <div className="adaptive-dept-focus">
-                                        <h3>Focus : {activeDeptData.nom} {selectedYear === 'all' && `(${activeDeptData.annee})`}</h3>
-                                        <div className="adaptive-stats-grid">
-                                            <div className="adaptive-stat-box">
-                                                <span className="stat-label">Taux de Pauvreté</span>
-                                                <span className="stat-value">{activeDeptData.x.toFixed(1)}%</span>
-                                            </div>
-                                            <div className="adaptive-stat-box">
-                                                <span className="stat-label">Solde Migratoire</span>
-                                                <span className="stat-value">{activeDeptData.y > 0 ? '+' : ''}{activeDeptData.y.toFixed(1)}%</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="adaptive-description">
-                                    <p>{currentDisplayInfo.desc}</p>
-                                </div>
-
-                                {selectedDept && deptHistory.length > 1 && (
-                                    <div className="adaptive-history-chart" style={{ height: '200px', marginTop: '1.5rem', borderTop: '1px dashed #334155', paddingTop: '1rem', display: 'flex', flexDirection: 'column' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: '700', textTransform: 'uppercase' }}>Évolution Temporelle</span>
-                                            <div style={{ display: 'flex', gap: '1rem', fontSize: '0.65rem', textTransform: 'uppercase', fontWeight: '700' }}>
-                                                <span style={{ color: '#64748b' }}>■ Pauvreté</span>
-                                                <span style={{ color: currentDisplayInfo.color }}>■ Migration</span>
-                                            </div>
-                                        </div>
-                                        <div style={{ flex: 1, minHeight: 0 }}>
-                                            <Line data={lineChartData} options={lineChartOptions} />
-                                        </div>
-                                    </div>
-                                )}
-                            </>
-                        ) : (
-                            <div className="adaptive-empty-state">
-                                <h3>Analysez un profil</h3>
-                                <p>Cliquez sur l'un des 4 profils au-dessus pour comprendre ses caractéristiques, ou sélectionnez un département spécifique pour voir son diagnostic détaillé.</p>
-                            </div>
-                        )}
+                    <div className="bi-chart-panel quadrant-panel">
+                        <div className="chart-toolbar">
+                            <h2 className="chart-title">Nuage de dispersion des territoires</h2>
+                        </div>
+                        <div className="chart-container-relative" style={{ height: '500px' }}>
+                            <Scatter data={chartData} options={chartOptions} />
+                        </div>
                     </div>
                 </div>
-
-                <div className="bi-chart-panel quadrant-panel">
-                    <div className="chart-toolbar">
-                        <h2 className="chart-title">Nuage de dispersion des territoires</h2>
-                    </div>
-                    <div className="chart-container-relative" style={{ height: '500px' }}>
-                        <Scatter data={chartData} options={chartOptions} />
-                    </div>
-                </div>
-            </div>
+            )}
         </div>
     );
 }

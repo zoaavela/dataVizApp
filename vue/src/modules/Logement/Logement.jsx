@@ -13,6 +13,7 @@ import annotationPlugin from 'chartjs-plugin-annotation';
 import { getLogementData, getQuadrantData } from '../../services/dataService';
 import { getCarteData } from '../../services/territoireService';
 import LogoLoader from '../../components/LogoLoader/LogoLoader';
+import SyncErrorAlert from '../../components/SyncErrorAlert/SyncErrorAlert';
 import './Logement.css';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend, annotationPlugin);
@@ -27,6 +28,8 @@ export default function Logement() {
     const [donneesGlobales, setDonneesGlobales] = useState([]);
     const [anneesDisponibles, setAnneesDisponibles] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [apiError, setApiError] = useState(null);
+    const [retryTrigger, setRetryTrigger] = useState(0);
 
     const [selectedYear, setSelectedYear] = useState('');
     const [selectedRegion, setSelectedRegion] = useState('all');
@@ -34,11 +37,12 @@ export default function Logement() {
 
     useEffect(() => {
         const fetchData = async () => {
+            setApiError(null);
             try {
                 const [protectionRes, quadrantRes, territoiresRes] = await Promise.all([
                     getLogementData(),
-                    getQuadrantData().catch(() => null),
-                    getCarteData().catch(() => null)
+                    getQuadrantData(),
+                    getCarteData()
                 ]);
 
                 const rawProtection = protectionRes?.['hydra:member'] || protectionRes?.data || protectionRes || [];
@@ -100,12 +104,13 @@ export default function Logement() {
 
             } catch (error) {
                 console.error("Erreur d'assemblage des données :", error);
+                setApiError("Le serveur de données ne répond pas. Veuillez réessayer ultérieurement.");
             } finally {
                 setIsLoading(false);
             }
         };
         fetchData();
-    }, []);
+    }, [retryTrigger]);
 
     const yearData = useMemo(() => {
         if (!selectedYear) return [];
@@ -323,82 +328,90 @@ export default function Logement() {
                 )}
             </nav>
 
-            <div className="bi-kpi-section">
-                <div className="bi-kpi-referentials">
-                    <div className="bi-kpi-card">
-                        <div className="kpi-header">Moyenne Nationale</div>
-                        <div className="kpi-body">
-                            <div className="kpi-stat">
-                                <span className="kpi-label">Ratio Global</span>
-                                <span className="kpi-value">{statsNationales.toFixed(1)}%</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {!isNationalView && statsRegionalesActuelles && (
-                        <div className="bi-kpi-card highlight">
-                            <div className="kpi-header">Moyenne {selectedRegion}</div>
-                            <div className="kpi-body">
-                                <div className="kpi-stat">
-                                    <span className="kpi-label">Ratio Régional</span>
-                                    <span className="kpi-value">{statsRegionalesActuelles.ratio.toFixed(1)}%</span>
+            {apiError ? (
+                <div style={{ padding: '2rem' }}>
+                    <SyncErrorAlert details={apiError} onRetry={() => setRetryTrigger(prev => prev + 1)} />
+                </div>
+            ) : (
+                <>
+                    <div className="bi-kpi-section">
+                        <div className="bi-kpi-referentials">
+                            <div className="bi-kpi-card">
+                                <div className="kpi-header">Moyenne Nationale</div>
+                                <div className="kpi-body">
+                                    <div className="kpi-stat">
+                                        <span className="kpi-label">Ratio Global</span>
+                                        <span className="kpi-value">{statsNationales.toFixed(1)}%</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
-                </div>
 
-                {activeEntity && activeStatus && (
-                    <div className="bi-kpi-card target" style={{ borderTopColor: activeStatus.color }}>
-                        <div className="kpi-header">Focus : {activeEntity.nom}</div>
-                        <div className="kpi-body target-body">
-                            <div className="target-stats">
-                                <div className="kpi-stat">
-                                    <span className="kpi-label" style={{ color: activeStatus.color }}>Ratio Local</span>
-                                    <span className="kpi-value" style={{ color: activeStatus.color, fontSize: '1.75rem' }}>{activeEntity.ratio.toFixed(1)}%</span>
+                            {!isNationalView && statsRegionalesActuelles && (
+                                <div className="bi-kpi-card highlight">
+                                    <div className="kpi-header">Moyenne {selectedRegion}</div>
+                                    <div className="kpi-body">
+                                        <div className="kpi-stat">
+                                            <span className="kpi-label">Ratio Régional</span>
+                                            <span className="kpi-value">{statsRegionalesActuelles.ratio.toFixed(1)}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {activeEntity && activeStatus && (
+                            <div className="bi-kpi-card target" style={{ borderTopColor: activeStatus.color }}>
+                                <div className="kpi-header">Focus : {activeEntity.nom}</div>
+                                <div className="kpi-body target-body">
+                                    <div className="target-stats">
+                                        <div className="kpi-stat">
+                                            <span className="kpi-label" style={{ color: activeStatus.color }}>Ratio Local</span>
+                                            <span className="kpi-value" style={{ color: activeStatus.color, fontSize: '1.75rem' }}>{activeEntity.ratio.toFixed(1)}%</span>
+                                        </div>
+                                    </div>
+                                    <div className="target-verdict">
+                                        <span className="verdict-title" style={{ color: activeStatus.color }}>
+                                            {activeStatus.title}
+                                        </span>
+                                        <span className="verdict-desc">{activeStatus.desc}</span>
+                                    </div>
+                                </div>
+                                <div className="analysis-stats-row">
+                                    <div className="analysis-stat-box">
+                                        <span className="bento-label">Taux Pauvreté</span>
+                                        <div className="stat-value-small">{activeEntity.pauv.toFixed(1)}%</div>
+                                    </div>
+                                    <div className="analysis-stat-box">
+                                        <span className="bento-label">Parc Social</span>
+                                        <div className="stat-value-small">{activeEntity.social.toFixed(1)}%</div>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="target-verdict">
-                                <span className="verdict-title" style={{ color: activeStatus.color }}>
-                                    {activeStatus.title}
-                                </span>
-                                <span className="verdict-desc">{activeStatus.desc}</span>
-                            </div>
-                        </div>
-                        <div className="analysis-stats-row">
-                            <div className="analysis-stat-box">
-                                <span className="bento-label">Taux Pauvreté</span>
-                                <div className="stat-value-small">{activeEntity.pauv.toFixed(1)}%</div>
-                            </div>
-                            <div className="analysis-stat-box">
-                                <span className="bento-label">Parc Social</span>
-                                <div className="stat-value-small">{activeEntity.social.toFixed(1)}%</div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            <div className="bi-chart-panel">
-                <div className="chart-toolbar">
-                    <h2 className="chart-title">Classement ({isNationalView ? 'Toutes les Régions' : selectedRegion})</h2>
-                    <div className="chart-legend-bottom">
-                        <div className="legend-item"><span className="legend-color" style={{ backgroundColor: '#ef4444' }}></span>Déficit (&lt;70%)</div>
-                        <div className="legend-item"><span className="legend-color" style={{ backgroundColor: '#f59e0b' }}></span>Tension (70-100%)</div>
-                        <div className="legend-item"><span className="legend-color" style={{ backgroundColor: '#10b981' }}></span>Excédent (&gt;100%)</div>
-                    </div>
-                </div>
-
-                <div className="chart-scrollable-container">
-                    <div style={{ height: `${dynamicChartHeight}px`, position: 'relative', width: '100%' }}>
-                        {chartDataArray.length > 0 ? (
-                            <Bar data={chartData} options={chartOptions} />
-                        ) : (
-                            <div className="no-data">Aucune donnée trouvée.</div>
                         )}
                     </div>
-                </div>
-            </div>
+
+                    <div className="bi-chart-panel">
+                        <div className="chart-toolbar">
+                            <h2 className="chart-title">Classement ({isNationalView ? 'Toutes les Régions' : selectedRegion})</h2>
+                            <div className="chart-legend-bottom">
+                                <div className="legend-item"><span className="legend-color" style={{ backgroundColor: '#ef4444' }}></span>Déficit (&lt;70%)</div>
+                                <div className="legend-item"><span className="legend-color" style={{ backgroundColor: '#f59e0b' }}></span>Tension (70-100%)</div>
+                                <div className="legend-item"><span className="legend-color" style={{ backgroundColor: '#10b981' }}></span>Excédent (&gt;100%)</div>
+                            </div>
+                        </div>
+
+                        <div className="chart-scrollable-container">
+                            <div style={{ height: `${dynamicChartHeight}px`, position: 'relative', width: '100%' }}>
+                                {chartDataArray.length > 0 ? (
+                                    <Bar data={chartData} options={chartOptions} />
+                                ) : (
+                                    <div className="no-data">Aucune donnée trouvée.</div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

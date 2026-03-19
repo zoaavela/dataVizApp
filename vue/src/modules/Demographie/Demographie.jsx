@@ -12,6 +12,7 @@ import { getAgeData } from '../../services/dataService';
 import { getCarteData } from '../../services/territoireService';
 import './Demographie.css';
 import LogoLoader from '../../components/LogoLoader/LogoLoader';
+import SyncErrorAlert from '../../components/SyncErrorAlert/SyncErrorAlert';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -25,6 +26,8 @@ export default function Demographie() {
     const [donneesGlobales, setDonneesGlobales] = useState([]);
     const [anneesDisponibles, setAnneesDisponibles] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [apiError, setApiError] = useState(null);
+    const [retryTrigger, setRetryTrigger] = useState(0);
 
     const [selectedYear, setSelectedYear] = useState('');
     const [selectedRegion, setSelectedRegion] = useState('all');
@@ -33,11 +36,12 @@ export default function Demographie() {
 
     useEffect(() => {
         const fetchData = async () => {
+            setApiError(null);
             try {
                 setIsLoading(true);
                 const [demoRes, territoiresRes] = await Promise.all([
-                    getAgeData().catch(() => []),
-                    getCarteData().catch(() => [])
+                    getAgeData(),
+                    getCarteData()
                 ]);
 
                 const rawDemo = demoRes?.['hydra:member'] || demoRes?.data || demoRes || [];
@@ -87,12 +91,13 @@ export default function Demographie() {
                 if (annees.length > 0) setSelectedYear(annees[0].toString());
             } catch (error) {
                 console.error("Erreur d'assemblage des données :", error);
+                setApiError("Le serveur de données ne répond pas. Veuillez réessayer ultérieurement.");
             } finally {
                 setIsLoading(false);
             }
         };
         fetchData();
-    }, []);
+    }, [retryTrigger]);
 
     const yearData = useMemo(() => {
         if (!selectedYear) return [];
@@ -302,81 +307,89 @@ export default function Demographie() {
                 </div>
             </nav>
 
-            <div className="bi-kpi-grid">
-                <div className="bi-kpi-card">
-                    <div className="kpi-header">Moyenne Nationale</div>
-                    <div className="kpi-body">
-                        <div className="kpi-stat">
-                            <span className="kpi-label color-jeunes">&lt; 20 ans</span>
-                            <span className="kpi-value">{statsMoyennes.jeunes.toFixed(1)}%</span>
-                        </div>
-                        <div className="kpi-divider"></div>
-                        <div className="kpi-stat">
-                            <span className="kpi-label color-seniors">60+ ans</span>
-                            <span className="kpi-value">{statsMoyennes.seniors.toFixed(1)}%</span>
-                        </div>
-                    </div>
+            {apiError ? (
+                <div style={{ padding: '2rem' }}>
+                    <SyncErrorAlert details={apiError} onRetry={() => setRetryTrigger(prev => prev + 1)} />
                 </div>
-
-                {!isNationalView && statsRegionalesActuelles && (
-                    <div className="bi-kpi-card highlight">
-                        <div className="kpi-header">Moyenne {selectedRegion}</div>
-                        <div className="kpi-body">
-                            <div className="kpi-stat">
-                                <span className="kpi-label color-jeunes">&lt; 20 ans</span>
-                                <span className="kpi-value">{statsRegionalesActuelles.partJeunes.toFixed(1)}%</span>
-                            </div>
-                            <div className="kpi-divider"></div>
-                            <div className="kpi-stat">
-                                <span className="kpi-label color-seniors">60+ ans</span>
-                                <span className="kpi-value">{statsRegionalesActuelles.partSeniors.toFixed(1)}%</span>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {activeEntity && activeAnalysis && (
-                    <div className="bi-kpi-card target" style={{ borderTopColor: activeAnalysis.color }}>
-                        <div className="kpi-header">Focus : {activeEntity.nom}</div>
-                        <div className="kpi-body target-body">
-                            <div className="target-stats">
+            ) : (
+                <>
+                    <div className="bi-kpi-grid">
+                        <div className="bi-kpi-card">
+                            <div className="kpi-header">Moyenne Nationale</div>
+                            <div className="kpi-body">
                                 <div className="kpi-stat">
-                                    <span className="kpi-value color-jeunes" style={{ fontSize: '1.75rem' }}>{activeEntity.partJeunes.toFixed(1)}%</span>
+                                    <span className="kpi-label color-jeunes">&lt; 20 ans</span>
+                                    <span className="kpi-value">{statsMoyennes.jeunes.toFixed(1)}%</span>
                                 </div>
+                                <div className="kpi-divider"></div>
                                 <div className="kpi-stat">
-                                    <span className="kpi-value color-seniors" style={{ fontSize: '1.75rem' }}>{activeEntity.partSeniors.toFixed(1)}%</span>
+                                    <span className="kpi-label color-seniors">60+ ans</span>
+                                    <span className="kpi-value">{statsMoyennes.seniors.toFixed(1)}%</span>
                                 </div>
                             </div>
-                            <div className="target-verdict">
-                                <span className="verdict-title" style={{ color: activeAnalysis.color }}>
-                                    {activeAnalysis.title}
-                                </span>
-                                <span className="verdict-desc">{activeAnalysis.desc}</span>
-                            </div>
                         </div>
-                    </div>
-                )}
-            </div>
 
-            <div className="bi-chart-panel">
-                <div className="chart-toolbar">
-                    <h2 className="chart-title">Pyramide Comparative ({isNationalView ? 'Toutes les Régions' : selectedRegion})</h2>
-                    <div className="chart-legend">
-                        <span className="legend-marker" style={{ backgroundColor: '#10b981' }}></span> Moins de 20 ans
-                        <span className="legend-marker" style={{ backgroundColor: '#047857', marginLeft: '1rem' }}></span> 60 ans et plus
-                    </div>
-                </div>
+                        {!isNationalView && statsRegionalesActuelles && (
+                            <div className="bi-kpi-card highlight">
+                                <div className="kpi-header">Moyenne {selectedRegion}</div>
+                                <div className="kpi-body">
+                                    <div className="kpi-stat">
+                                        <span className="kpi-label color-jeunes">&lt; 20 ans</span>
+                                        <span className="kpi-value">{statsRegionalesActuelles.partJeunes.toFixed(1)}%</span>
+                                    </div>
+                                    <div className="kpi-divider"></div>
+                                    <div className="kpi-stat">
+                                        <span className="kpi-label color-seniors">60+ ans</span>
+                                        <span className="kpi-value">{statsRegionalesActuelles.partSeniors.toFixed(1)}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
-                <div className="chart-scrollable-container">
-                    <div style={{ height: `${dynamicChartHeight}px`, position: 'relative', width: '100%' }}>
-                        {chartDataArray.length > 0 ? (
-                            <Bar data={chartData} options={chartOptions} />
-                        ) : (
-                            <div className="no-data">Aucune donnée trouvée.</div>
+                        {activeEntity && activeAnalysis && (
+                            <div className="bi-kpi-card target" style={{ borderTopColor: activeAnalysis.color }}>
+                                <div className="kpi-header">Focus : {activeEntity.nom}</div>
+                                <div className="kpi-body target-body">
+                                    <div className="target-stats">
+                                        <div className="kpi-stat">
+                                            <span className="kpi-value color-jeunes" style={{ fontSize: '1.75rem' }}>{activeEntity.partJeunes.toFixed(1)}%</span>
+                                        </div>
+                                        <div className="kpi-stat">
+                                            <span className="kpi-value color-seniors" style={{ fontSize: '1.75rem' }}>{activeEntity.partSeniors.toFixed(1)}%</span>
+                                        </div>
+                                    </div>
+                                    <div className="target-verdict">
+                                        <span className="verdict-title" style={{ color: activeAnalysis.color }}>
+                                            {activeAnalysis.title}
+                                        </span>
+                                        <span className="verdict-desc">{activeAnalysis.desc}</span>
+                                    </div>
+                                </div>
+                            </div>
                         )}
                     </div>
-                </div>
-            </div>
+
+                    <div className="bi-chart-panel">
+                        <div className="chart-toolbar">
+                            <h2 className="chart-title">Pyramide Comparative ({isNationalView ? 'Toutes les Régions' : selectedRegion})</h2>
+                            <div className="chart-legend">
+                                <span className="legend-marker" style={{ backgroundColor: '#10b981' }}></span> Moins de 20 ans
+                                <span className="legend-marker" style={{ backgroundColor: '#047857', marginLeft: '1rem' }}></span> 60 ans et plus
+                            </div>
+                        </div>
+
+                        <div className="chart-scrollable-container">
+                            <div style={{ height: `${dynamicChartHeight}px`, position: 'relative', width: '100%' }}>
+                                {chartDataArray.length > 0 ? (
+                                    <Bar data={chartData} options={chartOptions} />
+                                ) : (
+                                    <div className="no-data">Aucune donnée trouvée.</div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

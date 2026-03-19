@@ -4,6 +4,7 @@ import { Doughnut } from 'react-chartjs-2';
 import { getVacancyData } from '../../services/dataService';
 import { getCarteData } from '../../services/territoireService';
 import LogoLoader from '../../components/LogoLoader/LogoLoader';
+import SyncErrorAlert from '../../components/SyncErrorAlert/SyncErrorAlert';
 import './House.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -12,6 +13,8 @@ export default function House() {
     const [donneesGlobales, setDonneesGlobales] = useState([]);
     const [anneesDisponibles, setAnneesDisponibles] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [apiError, setApiError] = useState(null);
+    const [retryTrigger, setRetryTrigger] = useState(0);
 
     const [selectedYear, setSelectedYear] = useState('');
     const [selectedRegion, setSelectedRegion] = useState('all');
@@ -19,11 +22,12 @@ export default function House() {
 
     useEffect(() => {
         const fetchData = async () => {
+            setApiError(null);
             try {
                 setIsLoading(true);
                 const [vacRes, cartRes] = await Promise.all([
-                    getVacancyData().catch(() => []),
-                    getCarteData().catch(() => [])
+                    getVacancyData(),
+                    getCarteData()
                 ]);
 
                 const extract = (res) => res?.['hydra:member'] || res?.data || res || [];
@@ -41,7 +45,6 @@ export default function House() {
                     const t = tId ? mapT[tId.toString()] : null;
                     if (!t) return null;
 
-                    // Récupération des données depuis l'API
                     const total = parseInt(v.nombreLogements || v.nombre_logements) || 0;
                     const principales = parseInt(v.nombreResidencesPrincipales || v.nombre_residences_principales) || 0;
                     const vacantsTaux = parseFloat(v.taux || v.taux_vacance || 0);
@@ -70,14 +73,14 @@ export default function House() {
 
             } catch (err) {
                 console.error("Erreur de récupération :", err);
+                setApiError("Le serveur de données ne répond pas. Veuillez réessayer ultérieurement.");
             } finally {
                 setIsLoading(false);
             }
         };
         fetchData();
-    }, []);
+    }, [retryTrigger]);
 
-    // Filtres en cascade
     const yearData = useMemo(() => {
         if (!selectedYear) return [];
         return donneesGlobales.filter(d => d.annee === selectedYear);
@@ -102,13 +105,11 @@ export default function House() {
         }
     }, [chartDataArray, selectedDept, isNationalView]);
 
-    // Calcul de l'entité active (Département ou Agrégat Régional/National)
     const activeEntity = useMemo(() => {
         if (!isNationalView && selectedDept) {
             return chartDataArray.find(d => d.nom === selectedDept) || null;
         }
 
-        // Mode agrégé (Vue Nationale ou Vue Régionale sans focus)
         if (chartDataArray.length === 0) return null;
         const agg = chartDataArray.reduce((acc, curr) => {
             acc.principales += curr.principales;
@@ -125,7 +126,6 @@ export default function House() {
         };
     }, [isNationalView, selectedDept, chartDataArray, selectedRegion]);
 
-    // Moyenne de référence (pour la 1ère KPI card)
     const referenceStats = useMemo(() => {
         const sourceData = isNationalView ? yearData : chartDataArray;
         if (sourceData.length === 0) return { principales: 0, vacants: 0, secondaires: 0 };
@@ -226,76 +226,84 @@ export default function House() {
                 )}
             </nav>
 
-            <div className="bi-kpi-grid">
-                <div className="bi-kpi-card">
-                    <div className="kpi-header">Moyenne {isNationalView ? 'Nationale' : selectedRegion}</div>
-                    <div className="kpi-body">
-                        <div className="kpi-stat">
-                            <span className="kpi-label" style={{ color: '#10b981' }}>Principales</span>
-                            <span className="kpi-value">{referenceStats.principales.toFixed(1)}%</span>
-                        </div>
-                        <div className="kpi-divider"></div>
-                        <div className="kpi-stat">
-                            <span className="kpi-label" style={{ color: '#3b82f6' }}>Secondaires</span>
-                            <span className="kpi-value">{referenceStats.secondaires.toFixed(1)}%</span>
-                        </div>
-                        <div className="kpi-divider"></div>
-                        <div className="kpi-stat">
-                            <span className="kpi-label" style={{ color: '#f43f5e' }}>Vacants</span>
-                            <span className="kpi-value">{referenceStats.vacants.toFixed(1)}%</span>
-                        </div>
-                    </div>
+            {apiError ? (
+                <div style={{ padding: '2rem' }}>
+                    <SyncErrorAlert details={apiError} onRetry={() => setRetryTrigger(prev => prev + 1)} />
                 </div>
-
-                {activeEntity && (
-                    <div className="bi-kpi-card target" style={{ borderTopColor: activeAnalysis.color }}>
-                        <div className="kpi-header">Focus : {activeEntity.nom}</div>
-                        <div className="kpi-body target-body">
-                            <div className="target-stats">
+            ) : (
+                <>
+                    <div className="bi-kpi-grid">
+                        <div className="bi-kpi-card">
+                            <div className="kpi-header">Moyenne {isNationalView ? 'Nationale' : selectedRegion}</div>
+                            <div className="kpi-body">
                                 <div className="kpi-stat">
-                                    <span className="kpi-label">Principales</span>
-                                    <span className="kpi-value" style={{ color: '#10b981' }}>{pctPrincipales}%</span>
+                                    <span className="kpi-label" style={{ color: '#10b981' }}>Principales</span>
+                                    <span className="kpi-value">{referenceStats.principales.toFixed(1)}%</span>
                                 </div>
+                                <div className="kpi-divider"></div>
                                 <div className="kpi-stat">
-                                    <span className="kpi-label">Secondaires</span>
-                                    <span className="kpi-value" style={{ color: '#3b82f6' }}>{pctSecondaires}%</span>
+                                    <span className="kpi-label" style={{ color: '#3b82f6' }}>Secondaires</span>
+                                    <span className="kpi-value">{referenceStats.secondaires.toFixed(1)}%</span>
                                 </div>
+                                <div className="kpi-divider"></div>
                                 <div className="kpi-stat">
-                                    <span className="kpi-label">Vacants</span>
-                                    <span className="kpi-value" style={{ color: '#f43f5e' }}>{pctVacants}%</span>
+                                    <span className="kpi-label" style={{ color: '#f43f5e' }}>Vacants</span>
+                                    <span className="kpi-value">{referenceStats.vacants.toFixed(1)}%</span>
                                 </div>
                             </div>
-                            <div className="target-verdict">
-                                <span className="verdict-title" style={{ color: activeAnalysis.color }}>
-                                    {activeAnalysis.title}
-                                </span>
-                                <span className="verdict-desc">{activeAnalysis.desc}</span>
+                        </div>
+
+                        {activeEntity && (
+                            <div className="bi-kpi-card target" style={{ borderTopColor: activeAnalysis.color }}>
+                                <div className="kpi-header">Focus : {activeEntity.nom}</div>
+                                <div className="kpi-body target-body">
+                                    <div className="target-stats">
+                                        <div className="kpi-stat">
+                                            <span className="kpi-label">Principales</span>
+                                            <span className="kpi-value" style={{ color: '#10b981' }}>{pctPrincipales}%</span>
+                                        </div>
+                                        <div className="kpi-stat">
+                                            <span className="kpi-label">Secondaires</span>
+                                            <span className="kpi-value" style={{ color: '#3b82f6' }}>{pctSecondaires}%</span>
+                                        </div>
+                                        <div className="kpi-stat">
+                                            <span className="kpi-label">Vacants</span>
+                                            <span className="kpi-value" style={{ color: '#f43f5e' }}>{pctVacants}%</span>
+                                        </div>
+                                    </div>
+                                    <div className="target-verdict">
+                                        <span className="verdict-title" style={{ color: activeAnalysis.color }}>
+                                            {activeAnalysis.title}
+                                        </span>
+                                        <span className="verdict-desc">{activeAnalysis.desc}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="bi-chart-panel">
+                        <div className="chart-toolbar">
+                            <h2 className="chart-title">Répartition du Parc : {activeEntity?.nom}</h2>
+                            <div className="chart-legend">
+                                <span className="legend-marker" style={{ backgroundColor: '#10b981' }}></span> Principales
+                                <span className="legend-marker" style={{ backgroundColor: '#3b82f6', marginLeft: '1rem' }}></span> Secondaires
+                                <span className="legend-marker" style={{ backgroundColor: '#f43f5e', marginLeft: '1rem' }}></span> Vacants
+                            </div>
+                        </div>
+
+                        <div className="chart-container-classic" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '500px' }}>
+                            <div className="doughnut-container-relative">
+                                <Doughnut data={chartData} options={chartOptions} />
+                                <div className="doughnut-center-info">
+                                    <span className="d-val">{activeEntity?.total.toLocaleString('fr-FR')}</span>
+                                    <span className="d-lab">Logements<br />au total</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                )}
-            </div>
-
-            <div className="bi-chart-panel">
-                <div className="chart-toolbar">
-                    <h2 className="chart-title">Répartition du Parc : {activeEntity?.nom}</h2>
-                    <div className="chart-legend">
-                        <span className="legend-marker" style={{ backgroundColor: '#10b981' }}></span> Principales
-                        <span className="legend-marker" style={{ backgroundColor: '#3b82f6', marginLeft: '1rem' }}></span> Secondaires
-                        <span className="legend-marker" style={{ backgroundColor: '#f43f5e', marginLeft: '1rem' }}></span> Vacants
-                    </div>
-                </div>
-
-                <div className="chart-container-classic" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '500px' }}>
-                    <div className="doughnut-container-relative">
-                        <Doughnut data={chartData} options={chartOptions} />
-                        <div className="doughnut-center-info">
-                            <span className="d-val">{activeEntity?.total.toLocaleString('fr-FR')}</span>
-                            <span className="d-lab">Logements<br />au total</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                </>
+            )}
         </div>
     );
 }

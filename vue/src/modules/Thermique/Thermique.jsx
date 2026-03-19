@@ -13,6 +13,7 @@ import { getThermiqueData } from '../../services/dataService';
 import { getCarteData } from '../../services/territoireService';
 import './Thermique.css';
 import LogoLoader from '../../components/LogoLoader/LogoLoader';
+import SyncErrorAlert from '../../components/SyncErrorAlert/SyncErrorAlert';
 
 ChartJS.register(LinearScale, PointElement, LineElement, ScatterController, Tooltip, Legend);
 
@@ -33,6 +34,8 @@ export default function Thermique() {
     const [donneesGlobales, setDonneesGlobales] = useState([]);
     const [anneesDisponibles, setAnneesDisponibles] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [apiError, setApiError] = useState(null);
+    const [retryTrigger, setRetryTrigger] = useState(0);
 
     const [selectedYear, setSelectedYear] = useState('');
     const [selectedRegion, setSelectedRegion] = useState('all');
@@ -40,10 +43,12 @@ export default function Thermique() {
 
     useEffect(() => {
         const fetchData = async () => {
+            setApiError(null);
             try {
+                setIsLoading(true);
                 const [thermiqueRes, territoiresRes] = await Promise.all([
                     getThermiqueData(),
-                    getCarteData().catch(() => null)
+                    getCarteData()
                 ]);
 
                 await new Promise(resolve => setTimeout(resolve, 800));
@@ -103,12 +108,13 @@ export default function Thermique() {
 
             } catch (error) {
                 console.error("Erreur d'assemblage :", error);
+                setApiError("Le serveur de données ne répond pas. Veuillez réessayer ultérieurement.");
             } finally {
                 setIsLoading(false);
             }
         };
         fetchData();
-    }, []);
+    }, [retryTrigger]);
 
     const yearData = useMemo(() => {
         if (!selectedYear) return [];
@@ -283,98 +289,106 @@ export default function Thermique() {
                 </div>
             </nav>
 
-            <div className="bi-kpi-section">
-                <div className="bi-kpi-referentials">
-                    <div className="bi-kpi-card">
-                        <div className="kpi-header">Moyenne Nationale</div>
-                        <div className="kpi-body">
-                            <div className="kpi-stat">
-                                <span className="kpi-label">Âge Moyen</span>
-                                <span className="kpi-value">{statsNationales.age.toFixed(1)} <span style={{ fontSize: '0.9rem', fontWeight: 'normal' }}>ans</span></span>
-                            </div>
-                            <div className="kpi-divider"></div>
-                            <div className="kpi-stat">
-                                <span className="kpi-label">Passoires</span>
-                                <span className="kpi-value">{statsNationales.passoires.toFixed(1)}%</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {!isNationalView && statsRegionales && (
-                        <div className="bi-kpi-card highlight">
-                            <div className="kpi-header">Moyenne {selectedRegion}</div>
-                            <div className="kpi-body">
-                                <div className="kpi-stat">
-                                    <span className="kpi-label">Âge Moyen</span>
-                                    <span className="kpi-value">{statsRegionales.age.toFixed(1)} <span style={{ fontSize: '0.9rem', fontWeight: 'normal' }}>ans</span></span>
-                                </div>
-                                <div className="kpi-divider"></div>
-                                <div className="kpi-stat">
-                                    <span className="kpi-label">Passoires</span>
-                                    <span className="kpi-value">{statsRegionales.passoires.toFixed(1)}%</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+            {apiError ? (
+                <div style={{ padding: '2rem' }}>
+                    <SyncErrorAlert details={apiError} onRetry={() => setRetryTrigger(prev => prev + 1)} />
                 </div>
-
-                {activeDeptObj && activeAnalysis && (
-                    <div className="bi-kpi-card target" style={{ borderTopColor: activeAnalysis.color }}>
-                        <div className="kpi-header">Focus : {activeDeptObj.nom}</div>
-                        <div className="kpi-body target-body">
-                            <div className="target-stats">
-                                <div className="kpi-stat">
-                                    <span className="kpi-label">Âge Parc</span>
-                                    <span className="kpi-value" style={{ fontSize: '1.5rem' }}>{activeDeptObj.age} <span style={{ fontSize: '0.9rem', fontWeight: 'normal' }}>ans</span></span>
-                                </div>
-                                <div className="kpi-stat">
-                                    <span className="kpi-label">Passoires</span>
-                                    <span className="kpi-value" style={{ fontSize: '1.5rem', color: activeAnalysis.color }}>{activeDeptObj.passoires}%</span>
+            ) : (
+                <>
+                    <div className="bi-kpi-section">
+                        <div className="bi-kpi-referentials">
+                            <div className="bi-kpi-card">
+                                <div className="kpi-header">Moyenne Nationale</div>
+                                <div className="kpi-body">
+                                    <div className="kpi-stat">
+                                        <span className="kpi-label">Âge Moyen</span>
+                                        <span className="kpi-value">{statsNationales.age.toFixed(1)} <span style={{ fontSize: '0.9rem', fontWeight: 'normal' }}>ans</span></span>
+                                    </div>
+                                    <div className="kpi-divider"></div>
+                                    <div className="kpi-stat">
+                                        <span className="kpi-label">Passoires</span>
+                                        <span className="kpi-value">{statsNationales.passoires.toFixed(1)}%</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="target-verdict">
-                                <span className="verdict-title" style={{ color: activeAnalysis.color }}>
-                                    {activeAnalysis.title}
-                                </span>
-                                <span className="verdict-desc">{activeAnalysis.desc}</span>
+
+                            {!isNationalView && statsRegionales && (
+                                <div className="bi-kpi-card highlight">
+                                    <div className="kpi-header">Moyenne {selectedRegion}</div>
+                                    <div className="kpi-body">
+                                        <div className="kpi-stat">
+                                            <span className="kpi-label">Âge Moyen</span>
+                                            <span className="kpi-value">{statsRegionales.age.toFixed(1)} <span style={{ fontSize: '0.9rem', fontWeight: 'normal' }}>ans</span></span>
+                                        </div>
+                                        <div className="kpi-divider"></div>
+                                        <div className="kpi-stat">
+                                            <span className="kpi-label">Passoires</span>
+                                            <span className="kpi-value">{statsRegionales.passoires.toFixed(1)}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {activeDeptObj && activeAnalysis && (
+                            <div className="bi-kpi-card target" style={{ borderTopColor: activeAnalysis.color }}>
+                                <div className="kpi-header">Focus : {activeDeptObj.nom}</div>
+                                <div className="kpi-body target-body">
+                                    <div className="target-stats">
+                                        <div className="kpi-stat">
+                                            <span className="kpi-label">Âge Parc</span>
+                                            <span className="kpi-value" style={{ fontSize: '1.5rem' }}>{activeDeptObj.age} <span style={{ fontSize: '0.9rem', fontWeight: 'normal' }}>ans</span></span>
+                                        </div>
+                                        <div className="kpi-stat">
+                                            <span className="kpi-label">Passoires</span>
+                                            <span className="kpi-value" style={{ fontSize: '1.5rem', color: activeAnalysis.color }}>{activeDeptObj.passoires}%</span>
+                                        </div>
+                                    </div>
+                                    <div className="target-verdict">
+                                        <span className="verdict-title" style={{ color: activeAnalysis.color }}>
+                                            {activeAnalysis.title}
+                                        </span>
+                                        <span className="verdict-desc">{activeAnalysis.desc}</span>
+                                    </div>
+                                </div>
+
+                                <div className="gap-indicator" style={{ borderTop: '1px dashed #334155', paddingTop: '1rem', marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase' }}>Écart à la norme d'usure</span>
+                                    <span style={{ fontWeight: '800', color: activeAnalysis.color, backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.25rem 0.75rem', borderRadius: '4px' }}>
+                                        {activeDeptObj.gap > 0 ? '+' : ''}{activeDeptObj.gap.toFixed(1)} pts
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="bi-chart-panel thermique-panel">
+                        <div className="chart-toolbar">
+                            <h2 className="chart-title">Nuage de dispersion thermique ({isNationalView ? 'France' : selectedRegion})</h2>
+                            <div className="chart-legend-bottom">
+                                <div className="legend-item"><span className="legend-color" style={{ backgroundColor: '#ef4444' }}></span>Zone de Négligence</div>
+                                <div className="legend-item"><span className="legend-color" style={{ backgroundColor: '#f59e0b' }}></span>Usure Normale</div>
+                                <div className="legend-item"><span className="legend-color" style={{ backgroundColor: '#10b981' }}></span>Zone de Rénovation</div>
                             </div>
                         </div>
 
-                        <div className="gap-indicator" style={{ borderTop: '1px dashed #334155', paddingTop: '1rem', marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase' }}>Écart à la norme d'usure</span>
-                            <span style={{ fontWeight: '800', color: activeAnalysis.color, backgroundColor: 'rgba(255,255,255,0.05)', padding: '0.25rem 0.75rem', borderRadius: '4px' }}>
-                                {activeDeptObj.gap > 0 ? '+' : ''}{activeDeptObj.gap.toFixed(1)} pts
-                            </span>
+                        <div className="chart-container-relative" style={{ position: 'relative', flex: 1, padding: '1rem', minHeight: '500px' }}>
+                            <div className="chart-overlay-badge badge-top-left" style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.3)', backgroundColor: 'rgba(239, 68, 68, 0.05)' }}>
+                                Critique : Récent mais énergivore
+                            </div>
+                            <div className="chart-overlay-badge badge-bottom-right" style={{ color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.3)', backgroundColor: 'rgba(16, 185, 129, 0.05)' }}>
+                                Exemplaire : Ancien mais rénové
+                            </div>
+
+                            {availableDepartments.length > 0 ? (
+                                <Scatter data={chartData} options={chartOptions} />
+                            ) : (
+                                <div className="no-data">Aucune donnée disponible.</div>
+                            )}
                         </div>
                     </div>
-                )}
-            </div>
-
-            <div className="bi-chart-panel thermique-panel">
-                <div className="chart-toolbar">
-                    <h2 className="chart-title">Nuage de dispersion thermique ({isNationalView ? 'France' : selectedRegion})</h2>
-                    <div className="chart-legend-bottom">
-                        <div className="legend-item"><span className="legend-color" style={{ backgroundColor: '#ef4444' }}></span>Zone de Négligence</div>
-                        <div className="legend-item"><span className="legend-color" style={{ backgroundColor: '#f59e0b' }}></span>Usure Normale</div>
-                        <div className="legend-item"><span className="legend-color" style={{ backgroundColor: '#10b981' }}></span>Zone de Rénovation</div>
-                    </div>
-                </div>
-
-                <div className="chart-container-relative" style={{ position: 'relative', flex: 1, padding: '1rem', minHeight: '500px' }}>
-                    <div className="chart-overlay-badge badge-top-left" style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.3)', backgroundColor: 'rgba(239, 68, 68, 0.05)' }}>
-                        Critique : Récent mais énergivore
-                    </div>
-                    <div className="chart-overlay-badge badge-bottom-right" style={{ color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.3)', backgroundColor: 'rgba(16, 185, 129, 0.05)' }}>
-                        Exemplaire : Ancien mais rénové
-                    </div>
-
-                    {availableDepartments.length > 0 ? (
-                        <Scatter data={chartData} options={chartOptions} />
-                    ) : (
-                        <div className="no-data">Aucune donnée disponible.</div>
-                    )}
-                </div>
-            </div>
+                </>
+            )}
         </div>
     );
 }

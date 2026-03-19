@@ -13,6 +13,7 @@ import { getChomageData } from '../../services/dataService';
 import { getCarteData } from '../../services/territoireService';
 import './Chomage.css';
 import LogoLoader from '../../components/LogoLoader/LogoLoader';
+import SyncErrorAlert from '../../components/SyncErrorAlert/SyncErrorAlert';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -26,6 +27,8 @@ export default function Chomage() {
     const [donneesGlobales, setDonneesGlobales] = useState([]);
     const [anneesDisponibles, setAnneesDisponibles] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [apiError, setApiError] = useState(null);
+    const [retryTrigger, setRetryTrigger] = useState(0);
 
     const [selectedYear, setSelectedYear] = useState('');
     const [selectedRegion, setSelectedRegion] = useState('all');
@@ -34,11 +37,12 @@ export default function Chomage() {
 
     useEffect(() => {
         const fetchData = async () => {
+            setApiError(null);
             try {
                 setIsLoading(true);
                 const [chomageRes, territoiresRes] = await Promise.all([
-                    getChomageData().catch(() => []),
-                    getCarteData().catch(() => [])
+                    getChomageData(),
+                    getCarteData()
                 ]);
 
                 const rawChomage = chomageRes?.['hydra:member'] || chomageRes?.data || chomageRes || [];
@@ -82,12 +86,13 @@ export default function Chomage() {
                 if (annees.length > 0) setSelectedYear(annees[0].toString());
             } catch (error) {
                 console.error("Erreur d'assemblage des données :", error);
+                setApiError("Le serveur de données ne répond pas. Veuillez réessayer ultérieurement.");
             } finally {
                 setIsLoading(false);
             }
         };
         fetchData();
-    }, []);
+    }, [retryTrigger]);
 
     const yearData = useMemo(() => {
         if (!selectedYear) return [];
@@ -271,64 +276,72 @@ export default function Chomage() {
                 </div>
             </nav>
 
-            <div className="bi-kpi-grid">
-                <div className="bi-kpi-card">
-                    <div className="kpi-header">Moyenne Nationale</div>
-                    <div className="kpi-body single-stat">
-                        <div className="kpi-stat">
-                            <span className="kpi-label color-chomage">Taux de chômage</span>
-                            <span className="kpi-value">{statsMoyennes.taux.toFixed(1)}%</span>
-                        </div>
-                    </div>
+            {apiError ? (
+                <div style={{ padding: '2rem' }}>
+                    <SyncErrorAlert details={apiError} onRetry={() => setRetryTrigger(prev => prev + 1)} />
                 </div>
-
-                {!isNationalView && statsRegionalesActuelles && (
-                    <div className="bi-kpi-card highlight">
-                        <div className="kpi-header">Moyenne {selectedRegion}</div>
-                        <div className="kpi-body single-stat">
-                            <div className="kpi-stat">
-                                <span className="kpi-label color-chomage">Taux de chômage</span>
-                                <span className="kpi-value">{statsRegionalesActuelles.taux.toFixed(1)}%</span>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {activeEntity && activeAnalysis && (
-                    <div className="bi-kpi-card target" style={{ borderTopColor: activeAnalysis.color }}>
-                        <div className="kpi-header">Focus : {activeEntity.nom}</div>
-                        <div className="kpi-body target-body">
-                            <div className="target-stats">
+            ) : (
+                <>
+                    <div className="bi-kpi-grid">
+                        <div className="bi-kpi-card">
+                            <div className="kpi-header">Moyenne Nationale</div>
+                            <div className="kpi-body single-stat">
                                 <div className="kpi-stat">
-                                    <span className="kpi-value" style={{ fontSize: '2rem', color: activeAnalysis.color }}>
-                                        {activeEntity.taux.toFixed(1)}%
-                                    </span>
+                                    <span className="kpi-label color-chomage">Taux de chômage</span>
+                                    <span className="kpi-value">{statsMoyennes.taux.toFixed(1)}%</span>
                                 </div>
                             </div>
-                            <div className="target-verdict">
-                                <span className="verdict-title" style={{ color: activeAnalysis.color }}>
-                                    {activeAnalysis.title}
-                                </span>
-                                <span className="verdict-desc">{activeAnalysis.desc}</span>
+                        </div>
+
+                        {!isNationalView && statsRegionalesActuelles && (
+                            <div className="bi-kpi-card highlight">
+                                <div className="kpi-header">Moyenne {selectedRegion}</div>
+                                <div className="kpi-body single-stat">
+                                    <div className="kpi-stat">
+                                        <span className="kpi-label color-chomage">Taux de chômage</span>
+                                        <span className="kpi-value">{statsRegionalesActuelles.taux.toFixed(1)}%</span>
+                                    </div>
+                                </div>
                             </div>
+                        )}
+
+                        {activeEntity && activeAnalysis && (
+                            <div className="bi-kpi-card target" style={{ borderTopColor: activeAnalysis.color }}>
+                                <div className="kpi-header">Focus : {activeEntity.nom}</div>
+                                <div className="kpi-body target-body">
+                                    <div className="target-stats">
+                                        <div className="kpi-stat">
+                                            <span className="kpi-value" style={{ fontSize: '2rem', color: activeAnalysis.color }}>
+                                                {activeEntity.taux.toFixed(1)}%
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="target-verdict">
+                                        <span className="verdict-title" style={{ color: activeAnalysis.color }}>
+                                            {activeAnalysis.title}
+                                        </span>
+                                        <span className="verdict-desc">{activeAnalysis.desc}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="bi-chart-panel">
+                        <div className="chart-toolbar">
+                            <h2 className="chart-title">Répartition du Chômage ({isNationalView ? 'Toutes les Régions' : selectedRegion})</h2>
+                        </div>
+
+                        <div className="chart-container-classic">
+                            {chartDataArray.length > 0 ? (
+                                <Bar data={chartData} options={chartOptions} />
+                            ) : (
+                                <div className="no-data">Aucune donnée trouvée.</div>
+                            )}
                         </div>
                     </div>
-                )}
-            </div>
-
-            <div className="bi-chart-panel">
-                <div className="chart-toolbar">
-                    <h2 className="chart-title">Répartition du Chômage ({isNationalView ? 'Toutes les Régions' : selectedRegion})</h2>
-                </div>
-
-                <div className="chart-container-classic">
-                    {chartDataArray.length > 0 ? (
-                        <Bar data={chartData} options={chartOptions} />
-                    ) : (
-                        <div className="no-data">Aucune donnée trouvée.</div>
-                    )}
-                </div>
-            </div>
+                </>
+            )}
         </div>
     );
 }
