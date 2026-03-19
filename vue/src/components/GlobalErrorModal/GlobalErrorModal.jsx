@@ -22,7 +22,7 @@ export default function GlobalErrorModal() {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setError(null);
-        window.location.href = '/';
+        window.location.href = '/dataVizApp/';
     };
 
     // Fermer le popup (seulement si ce n'est pas une expiration de session)
