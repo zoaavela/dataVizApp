@@ -1,4 +1,3 @@
-// --- App.jsx ---
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useState } from 'react';
 
@@ -20,6 +19,7 @@ import House from './modules/House/House';
 import SuperAdminDashboard from './pages/SuperAdminDashboard/SuperAdminDashboard';
 import LandingPage from './pages/LandingPage/LandingPage';
 import SessionManager from './components/SessionManager/SessionManager';
+import GlobalErrorModal from './components/GlobalErrorModal/GlobalErrorModal';
 
 const AdminRoute = ({ user, children }) => {
   if (!user || (!user.roles?.includes("ROLE_ADMIN") && !user.roles?.includes("ROLE_SUPER_ADMIN"))) {
@@ -44,7 +44,7 @@ export default function App() {
   return (
     <BrowserRouter basename="/dataVizApp">
 
-      {/* AJOUT ICI : Le gestionnaire de session doit être rendu à l'intérieur du BrowserRouter */}
+      <GlobalErrorModal />
       <SessionManager setUser={setUser} />
 
       <Routes>

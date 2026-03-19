@@ -1,24 +1,30 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 export default function SessionManager({ setUser }) {
-    const navigate = useNavigate();
-
     useEffect(() => {
         let timer;
-        const TIMEOUT_MS = 15 * 60 * 1000;
+        const TIMEOUT_MS = 1 * 60 * 1000; // 15 minutes
 
-        const logout = () => {
+        const handleInactivity = () => {
+            // Sécurité immédiate : on supprime les accès locaux
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            setUser(null);
-            navigate('/');
+            if (setUser) setUser(null);
+
+            // On déclenche le popup global au lieu de rediriger brutalement
+            window.dispatchEvent(new CustomEvent('global-api-error', {
+                detail: {
+                    type: 'auth',
+                    message: "Votre session a été fermée suite à 15 minutes d'inactivité. Pour votre sécurité, veuillez vous reconnecter."
+                }
+            }));
         };
 
         const resetTimer = () => {
             clearTimeout(timer);
+            // On ne relance le chrono que si l'utilisateur est connecté
             if (localStorage.getItem('token')) {
-                timer = setTimeout(logout, TIMEOUT_MS);
+                timer = setTimeout(handleInactivity, TIMEOUT_MS);
             }
         };
 
@@ -31,7 +37,7 @@ export default function SessionManager({ setUser }) {
             clearTimeout(timer);
             events.forEach(event => window.removeEventListener(event, resetTimer));
         };
-    }, [navigate, setUser]);
+    }, [setUser]);
 
     return null;
 }

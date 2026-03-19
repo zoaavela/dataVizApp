@@ -7,6 +7,7 @@ import './Carte.css';
 import { getCarteData } from '../../services/territoireService';
 import { getChomageData, getThermiqueData, getLogementData, getQuadrantData } from '../../services/dataService';
 import LogoLoader from '../../components/LogoLoader/LogoLoader';
+import SyncErrorAlert from '../../components/SyncErrorAlert/SyncErrorAlert';
 
 function MapController({ targetView }) {
     const map = useMap();
@@ -81,18 +82,23 @@ export default function Carte() {
     const [selectedYear, setSelectedYear] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [mainView, setMainView] = useState(METRO_VIEW);
+
     const [isLoading, setIsLoading] = useState(true);
+    const [apiError, setApiError] = useState(null);
+    const [retryTrigger, setRetryTrigger] = useState(0);
 
     useEffect(() => {
         let isMounted = true;
 
         const fetchAllData = async () => {
+            if (isMounted) setApiError(null);
             try {
-                const carteRes = await getCarteData().catch(() => []);
-                const chomageRes = await getChomageData().catch(() => []);
-                const thermiqueRes = await getThermiqueData().catch(() => []);
-                const logementRes = await getLogementData().catch(() => []);
-                const pauvreteRes = await getQuadrantData().catch(() => []);
+                setIsLoading(true);
+                const carteRes = await getCarteData();
+                const chomageRes = await getChomageData();
+                const thermiqueRes = await getThermiqueData();
+                const logementRes = await getLogementData();
+                const pauvreteRes = await getQuadrantData();
 
                 if (!isMounted) return;
 
@@ -145,6 +151,7 @@ export default function Carte() {
                 setStatsGlobales(statsMap);
             } catch (error) {
                 console.error("Erreur de récupération :", error);
+                if (isMounted) setApiError("Le serveur de données ne répond pas. Veuillez réessayer ultérieurement.");
             } finally {
                 if (isMounted) setIsLoading(false);
             }
@@ -152,7 +159,7 @@ export default function Carte() {
 
         fetchAllData();
         return () => { isMounted = false; };
-    }, []);
+    }, [retryTrigger]);
 
     const suggestions = useMemo(() => {
         if (!searchQuery) return [];
@@ -246,74 +253,80 @@ export default function Carte() {
                 </div>
             </nav>
 
-            <div className="carte-body-layout">
-                <div className="carte-map-section">
-                    <div className="carte-map-container" style={{ height: '100%', minHeight: '500px', width: '100%', position: 'relative' }}>
-                        <MapContainer
-                            center={METRO_VIEW.center}
-                            zoom={METRO_VIEW.zoom}
-                            zoomControl={true}
-                            style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: '#000000' }}
-                        >
-                            {mainView && <MapController targetView={mainView} />}
-                            <MapResizer />
-                            <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
-                            {territoires.map((t) => {
-                                if (!t || !t.geom) return null;
-                                return (
-                                    <TerritoireLayer
-                                        key={t.id}
-                                        territoire={t}
-                                        isSelected={selectedId === t.id}
-                                        onClick={() => handleSelectTerritoire(t)}
-                                    />
-                                );
-                            })}
-                        </MapContainer>
-                    </div>
+            {apiError ? (
+                <div style={{ padding: '2rem', flex: 1, width: '100%' }}>
+                    <SyncErrorAlert details={apiError} onRetry={() => setRetryTrigger(prev => prev + 1)} />
                 </div>
-
-                <aside className="carte-side-section">
-                    {territoryInfo ? (
-                        <div className="carte-fiche-card active">
-                            <div className="carte-fiche-header">Fiche d'identité • {selectedYear || "Aucune année"}</div>
-
-                            <div className="carte-fiche-title-block">
-                                <h2 className="carte-fiche-name">{territoryInfo.nom}</h2>
-                                <span className="carte-fiche-badge">DÉPARTEMENT {territoryInfo.code}</span>
-                            </div>
-
-                            <div className="carte-stats-grid">
-                                <div className="carte-stat-box">
-                                    <span className="carte-stat-label"><Activity size={14} /> Chômage</span>
-                                    <span className="carte-stat-value">{formatStat(selectedData.chomage)}</span>
-                                </div>
-                                <div className="carte-stat-box">
-                                    <span className="carte-stat-label"><Droplets size={14} /> Pauvreté</span>
-                                    <span className="carte-stat-value">{formatStat(selectedData.pauvrete)}</span>
-                                </div>
-                                <div className="carte-stat-box">
-                                    <span className="carte-stat-label"><Home size={14} /> HLM</span>
-                                    <span className="carte-stat-value">{formatStat(selectedData.logement)}</span>
-                                </div>
-                                <div className="carte-stat-box">
-                                    <span className="carte-stat-label"><Flame size={14} /> Passoires Ther.</span>
-                                    <span className="carte-stat-value">{formatStat(selectedData.thermique)}</span>
-                                </div>
-                            </div>
-
-                            {(!selectedData.chomage && !selectedData.logement && !selectedData.pauvrete && !selectedData.thermique) && (
-                                <div className="carte-fiche-alert">Aucune donnée disponible pour ce territoire en {selectedYear || 'cette année'}.</div>
-                            )}
+            ) : (
+                <div className="carte-body-layout">
+                    <div className="carte-map-section">
+                        <div className="carte-map-container" style={{ height: '100%', minHeight: '500px', width: '100%', position: 'relative' }}>
+                            <MapContainer
+                                center={METRO_VIEW.center}
+                                zoom={METRO_VIEW.zoom}
+                                zoomControl={true}
+                                style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundColor: '#000000' }}
+                            >
+                                {mainView && <MapController targetView={mainView} />}
+                                <MapResizer />
+                                <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+                                {territoires.map((t) => {
+                                    if (!t || !t.geom) return null;
+                                    return (
+                                        <TerritoireLayer
+                                            key={t.id}
+                                            territoire={t}
+                                            isSelected={selectedId === t.id}
+                                            onClick={() => handleSelectTerritoire(t)}
+                                        />
+                                    );
+                                })}
+                            </MapContainer>
                         </div>
-                    ) : (
-                        <div className="carte-fiche-card empty">
-                            <Info size={32} className="carte-empty-icon" />
-                            <p className="carte-empty-text">Sélectionnez un département sur la carte ou utilisez la barre de recherche pour consulter ses données.</p>
-                        </div>
-                    )}
-                </aside>
-            </div>
+                    </div>
+
+                    <aside className="carte-side-section">
+                        {territoryInfo ? (
+                            <div className="carte-fiche-card active">
+                                <div className="carte-fiche-header">Fiche d'identité • {selectedYear || "Aucune année"}</div>
+
+                                <div className="carte-fiche-title-block">
+                                    <h2 className="carte-fiche-name">{territoryInfo.nom}</h2>
+                                    <span className="carte-fiche-badge">DÉPARTEMENT {territoryInfo.code}</span>
+                                </div>
+
+                                <div className="carte-stats-grid">
+                                    <div className="carte-stat-box">
+                                        <span className="carte-stat-label"><Activity size={14} /> Chômage</span>
+                                        <span className="carte-stat-value">{formatStat(selectedData.chomage)}</span>
+                                    </div>
+                                    <div className="carte-stat-box">
+                                        <span className="carte-stat-label"><Droplets size={14} /> Pauvreté</span>
+                                        <span className="carte-stat-value">{formatStat(selectedData.pauvrete)}</span>
+                                    </div>
+                                    <div className="carte-stat-box">
+                                        <span className="carte-stat-label"><Home size={14} /> HLM</span>
+                                        <span className="carte-stat-value">{formatStat(selectedData.logement)}</span>
+                                    </div>
+                                    <div className="carte-stat-box">
+                                        <span className="carte-stat-label"><Flame size={14} /> Passoires Ther.</span>
+                                        <span className="carte-stat-value">{formatStat(selectedData.thermique)}</span>
+                                    </div>
+                                </div>
+
+                                {(!selectedData.chomage && !selectedData.logement && !selectedData.pauvrete && !selectedData.thermique) && (
+                                    <div className="carte-fiche-alert">Aucune donnée disponible pour ce territoire en {selectedYear || 'cette année'}.</div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="carte-fiche-card empty">
+                                <Info size={32} className="carte-empty-icon" />
+                                <p className="carte-empty-text">Sélectionnez un département sur la carte ou utilisez la barre de recherche pour consulter ses données.</p>
+                            </div>
+                        )}
+                    </aside>
+                </div>
+            )}
         </div>
     );
 }

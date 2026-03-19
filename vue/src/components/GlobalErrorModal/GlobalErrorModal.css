@@ -1,0 +1,126 @@
+/* --- OVERLAY DU POPUP --- */
+.global-error-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 99999; /* Par-dessus tout, y compris le loader */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    animation: fadeInError 0.3s ease-out forwards;
+}
+
+/* --- BOITE DU MODAL --- */
+.global-error-modal {
+    background-color: #000000;
+    border: 1px solid #333333;
+    border-top: 2px solid #ef4444; /* Accent rouge sur le dessus */
+    border-radius: 6px;
+    width: 100%;
+    max-width: 420px;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+    animation: slideUpError 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* --- ICONE --- */
+.global-error-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: rgba(239, 68, 68, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.global-error-icon {
+    color: #ef4444;
+}
+
+/* --- TEXTES --- */
+.global-error-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: #ffffff;
+    margin: 0 0 1rem 0;
+}
+
+.global-error-message {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: #a1a1aa;
+    line-height: 1.6;
+    margin: 0 0 2rem 0;
+}
+
+/* --- BOUTONS --- */
+.global-error-actions {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+
+.global-error-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.8rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.global-error-btn.outline {
+    background: transparent;
+    border: 1px solid #3f3f46;
+    color: #e4e4e7;
+}
+
+.global-error-btn.outline:hover {
+    border-color: #ffffff;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.global-error-btn.solid {
+    background: #ef4444;
+    border: 1px solid #ef4444;
+    color: #ffffff;
+}
+
+.global-error-btn.solid:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes fadeInError {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUpError {
+    from { 
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}

@@ -20,19 +20,30 @@ export const apiFetch = async (endpoint, options = {}) => {
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
-    // --- LE NETTOYAGE EST ICI (Erreur 401 : Token expiré) ---
+    // --- INTERCEPTION DES ERREURS POUR LE POPUP GLOBAL ---
     if (response.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/dataVizApp/login'; // Redirection forcée et immédiate
-        throw new Error('Session expirée'); // Bloque la suite du code
+        window.dispatchEvent(new CustomEvent('global-api-error', {
+            detail: {
+                type: 'auth',
+                message: 'Votre session a expiré. Pour votre sécurité, veuillez vous reconnecter.'
+            }
+        }));
+        throw new Error('Session expirée');
     }
-    // --------------------------------------------------------
 
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.message || errorData.error || 'Une erreur inattendue est survenue lors de la communication avec le serveur.';
+
+        window.dispatchEvent(new CustomEvent('global-api-error', {
+            detail: {
+                type: 'server',
+                message: errorMessage
+            }
+        }));
         throw errorData;
     }
+    // --------------------------------------------------------
 
     if (response.status === 204) {
         return null;
