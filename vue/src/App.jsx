@@ -1,5 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
 
 import Login from './pages/Login/Login';
 import Layout from './components/Layout/Layout';
@@ -20,6 +21,7 @@ import SuperAdminDashboard from './pages/SuperAdminDashboard/SuperAdminDashboard
 import LandingPage from './pages/LandingPage/LandingPage';
 import SessionManager from './components/SessionManager/SessionManager';
 import GlobalErrorModal from './components/GlobalErrorModal/GlobalErrorModal';
+import PageTransition from './components/PageTransition/PageTransition';
 
 const AdminRoute = ({ user, children }) => {
   if (!user || (!user.roles?.includes("ROLE_ADMIN") && !user.roles?.includes("ROLE_SUPER_ADMIN"))) {
@@ -35,6 +37,53 @@ const SuperAdminRoute = ({ user, children }) => {
   return children;
 };
 
+// Sous-composant pour gérer les animations de sortie avec useLocation
+function AnimatedRoutes({ user, setUser }) {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
+        <Route path="/login" element={<PageTransition><Login setUser={setUser} /></PageTransition>} />
+        <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
+
+        <Route element={<Layout user={user} setUser={setUser} />}>
+          <Route path="/accueil" element={<PageTransition><Home user={user} /></PageTransition>} />
+          <Route path="/carte" element={<PageTransition><Carte /></PageTransition>} />
+          <Route path="/modules" element={<PageTransition><Modules /></PageTransition>} />
+          <Route path="/quadrant" element={<PageTransition><Quadrant /></PageTransition>} />
+          <Route path="/house" element={<PageTransition><House /></PageTransition>} />
+          <Route path="/demographie" element={<PageTransition><Demographie /></PageTransition>} />
+          <Route path="/logement" element={<PageTransition><Logement /></PageTransition>} />
+          <Route path="/thermique" element={<PageTransition><Thermique /></PageTransition>} />
+          <Route path="/chomage" element={<PageTransition><Chomage /></PageTransition>} />
+          <Route path="/about" element={<PageTransition><Propos /></PageTransition>} />
+
+          <Route path="/profil" element={
+            <AdminRoute user={user}>
+              <PageTransition><Profil /></PageTransition>
+            </AdminRoute>
+          } />
+
+          <Route path="/admin/import" element={
+            <AdminRoute user={user}>
+              <PageTransition><Import /></PageTransition>
+            </AdminRoute>
+          } />
+
+          <Route path="/super-admin/requests" element={
+            <SuperAdminRoute user={user}>
+              <PageTransition><SuperAdminDashboard /></PageTransition>
+            </SuperAdminRoute>
+          } />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 export default function App() {
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
@@ -43,47 +92,9 @@ export default function App() {
 
   return (
     <BrowserRouter basename="/vision">
-
       <GlobalErrorModal />
       <SessionManager setUser={setUser} />
-
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login setUser={setUser} />} />
-        <Route path="/register" element={<Register />} />
-
-        <Route element={<Layout user={user} setUser={setUser} />}>
-          <Route path="/accueil" element={<Home user={user} />} />
-          <Route path="/carte" element={<Carte />} />
-          <Route path="/modules" element={<Modules />} />
-          <Route path="/quadrant" element={<Quadrant />} />
-          <Route path="/house" element={<House />} />
-          <Route path="/demographie" element={<Demographie />} />
-          <Route path="/logement" element={<Logement />} />
-          <Route path="/thermique" element={<Thermique />} />
-          <Route path="/chomage" element={<Chomage />} />
-          <Route path="/about" element={<Propos />} />
-
-          <Route path="/profil" element={
-            <AdminRoute user={user}>
-              <Profil />
-            </AdminRoute>
-          } />
-
-          <Route path="/admin/import" element={
-            <AdminRoute user={user}>
-              <Import />
-            </AdminRoute>
-          } />
-
-          <Route path="/super-admin/requests" element={
-            <SuperAdminRoute user={user}>
-              <SuperAdminDashboard />
-            </SuperAdminRoute>
-          } />
-        </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <AnimatedRoutes user={user} setUser={setUser} />
     </BrowserRouter>
   );
 }
