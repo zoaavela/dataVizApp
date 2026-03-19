@@ -82,6 +82,7 @@ export default function App() {
             </SuperAdminRoute>
           } />
         </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
