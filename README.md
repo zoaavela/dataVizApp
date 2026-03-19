@@ -1,3 +1,3 @@
-# dataVizApp
+# vision
 
 https://vizion.ct.ws/

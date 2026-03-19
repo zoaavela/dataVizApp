@@ -10,7 +10,7 @@ export default function SyncErrorAlert({
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/dataVizApp/';
+        window.location.href = '/vision/';
     };
 
     return (

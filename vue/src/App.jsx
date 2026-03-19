@@ -42,7 +42,7 @@ export default function App() {
   });
 
   return (
-    <BrowserRouter basename="/dataVizApp">
+    <BrowserRouter basename="/vision">
 
       <GlobalErrorModal />
       <SessionManager setUser={setUser} />
