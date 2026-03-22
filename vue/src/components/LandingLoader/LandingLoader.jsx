@@ -6,10 +6,10 @@ export default function LandingLoader() {
     const [shouldFadeOut, setShouldFadeOut] = useState(false);
 
     useEffect(() => {
-        // Le loader durera exactement 3 secondes avant de disparaître
+        // Disparition douce après exactement 3 secondes
         const timer = setTimeout(() => {
             setShouldFadeOut(true);
-        }, 1000);
+        }, 3000);
 
         return () => clearTimeout(timer);
     }, []);
@@ -17,11 +17,11 @@ export default function LandingLoader() {
     return (
         <div className={`landing-loader-overlay ${shouldFadeOut ? 'fade-out' : ''}`}>
             <div className="landing-loader-content">
-                <div className="landing-loader-logo-glow">
-                    <img src={logo} alt="VISION" className="landing-loader-img" />
+                <img src={logo} alt="VISION" className="landing-loader-img" />
+                
+                <div className="landing-loader-progress-wrapper">
+                    <div className="landing-loader-progress-bar"></div>
                 </div>
-
-
             </div>
         </div>
     );

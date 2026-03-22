@@ -91,7 +91,7 @@ export default function App() {
   });
 
   return (
-    <BrowserRouter basename="/vision">
+    <BrowserRouter basename="/">
       <GlobalErrorModal />
       <SessionManager setUser={setUser} />
       <AnimatedRoutes user={user} setUser={setUser} />

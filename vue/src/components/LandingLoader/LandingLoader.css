@@ -1,4 +1,4 @@
-/* --- PREMIUM LANDING LOADER --- */
+/* --- LOADER VISION (LONG WHITE NEON) --- */
 .landing-loader-overlay {
     position: fixed;
     inset: 0;
@@ -7,7 +7,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    /* Transition de 1.2s très douce pour révéler la page en douceur */
     transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 1.2s;
     opacity: 1;
     visibility: visible;
@@ -23,70 +22,112 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3.5rem;
-}
-
-/* Effet de lueur (Glow) derrière le logo */
-.landing-loader-logo-glow {
+    gap: 3.5rem; /* Espace plus grand pour équilibrer une très longue barre */
     position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 100%;
 }
 
-.landing-loader-logo-glow::before {
+/* Subtil halo de lumière d'arrière-plan */
+.landing-loader-content::before {
     content: '';
     position: absolute;
-    width: 120px;
-    height: 120px;
-    background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, transparent 70%);
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
     border-radius: 50%;
-    animation: pulse-glow-green 2s infinite alternate ease-in-out;
     z-index: 0;
+    animation: flow-pulse 4s ease-in-out infinite alternate;
 }
 
 .landing-loader-img {
-    width: 70px;
+    width: 90px; 
     height: auto;
-    filter: grayscale(1) brightness(2);
+    /* Transformation en blanc avec son propre effet lumineux néon */
+    filter: grayscale(1) brightness(2) drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
     position: relative;
-    z-index: 1;
-    /* Animation de rebond */
-    animation: bounce-logo 1.5s infinite;
+    z-index: 2;
+    animation: bounce-levitate 4s ease-in-out infinite;
 }
 
-/* --- ANIMATIONS --- */
-@keyframes pulse-glow-green {
-    0% {
-        transform: scale(0.6);
-        opacity: 0.2;
-    }
+/* --- Barre de progression longue et néon --- */
+.landing-loader-progress-wrapper {
+    position: relative;
+    z-index: 2;
+    width: 280px; /* Barre VOLONTAIREMENT très longue */
+    height: 2px;
+    background: rgba(255, 255, 255, 0.08); /* Fil continu très sombre à l'arrière */
+    border-radius: 4px;
+    /* IMPORTANT : Pas d'overflow: hidden ici pour laisser sortir le "Glow" des néons ! */
+}
 
+.landing-loader-progress-bar {
+    height: 100%;
+    background: #ffffff;
+    width: 0%;
+    border-radius: 4px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    /* Véritable effet NEON blanc */
+    box-shadow: 
+        0 0 5px #ffffff, 
+        0 0 12px #ffffff, 
+        0 0 25px rgba(255, 255, 255, 0.8), 
+        0 0 50px rgba(255, 255, 255, 0.4);
+    animation: neon-fill-flow 3s cubic-bezier(0.8, 0, 0.2, 1) forwards;
+}
+
+/* Étincelle (Flare) hyper-lumineuse à la tête de la barre d'avancement */
+.landing-loader-progress-bar::after {
+    content: '';
+    position: absolute;
+    right: -2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #ffffff, 0 0 20px #ffffff, 0 0 40px #ffffff;
+}
+
+/* --- ANIMATIONS MATERIELLES --- */
+@keyframes neon-fill-flow {
+    0% {
+        width: 0%;
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    40% {
+        width: 60%;
+    }
     100% {
-        transform: scale(1.4);
+        width: 100%;
         opacity: 1;
     }
 }
 
-@keyframes bounce-logo {
+@keyframes bounce-levitate {
     0%, 100% {
-        transform: translateY(0) scaleY(1);
-        animation-timing-function: ease-in;
-    }
-    40% {
-        transform: translateY(-30px) scaleY(1.05);
-        animation-timing-function: ease-in;
+        transform: translateY(0);
     }
     50% {
-        transform: translateY(-30px) scaleY(1.05);
-        animation-timing-function: ease-out;
+        transform: translateY(-8px);
     }
-    80% {
-        transform: translateY(0) scaleY(0.9);
-        animation-timing-function: ease-out;
+}
+
+@keyframes flow-pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.9);
+        opacity: 0.6;
     }
-    90% {
-        transform: translateY(-5px) scaleY(1);
-        animation-timing-function: ease-in;
+    100% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 1;
     }
 }
