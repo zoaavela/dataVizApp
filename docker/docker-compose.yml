@@ -1,0 +1,23 @@
+services:
+  vision:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    container_name: vision
+    restart: unless-stopped
+    ports:
+      - "80:80"       # Frontend React
+      - "8000:8000"   # API Symfony
+      - "3307:3306"   # MySQL (accès direct à la BDD)
+    volumes:
+      - vision_db:/var/lib/mysql
+    environment:
+      APP_ENV: prod
+      APP_SECRET: vision_secret_change_me
+      DATABASE_URL: mysql://vision:vision@127.0.0.1:3306/vision
+      JWT_SECRET_KEY: /var/www/api/config/jwt/private.pem
+      JWT_PUBLIC_KEY: /var/www/api/config/jwt/public.pem
+      JWT_PASSPHRASE: vision_jwt_passphrase
+
+volumes:
+  vision_db:
