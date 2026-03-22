@@ -14,6 +14,7 @@
 - [Stack technique](#stack-technique)
 - [Prérequis](#prérequis)
 - [Installation locale](#installation-locale)
+- [Créer des utilisateurs](#créer-des-utilisateurs)
 - [Variables d'environnement](#variables-denvironnement)
 - [Déploiement en production](#déploiement-en-production)
 - [Rôles et authentification](#rôles-et-authentification)
@@ -36,7 +37,7 @@ La version en ligne est hébergée sur un dépôt GitLab privé et déployée au
 - Lecture et traitement de fichiers CSV
 - Exploration et filtrage des données
 - Gestion de rôles : accès public, ADMIN et SUPER ADMIN avec authentification JWT
-- Environnement Docker pour tester l'application en local
+- Environnement Docker pour tester l'application en local sans aucune installation
 
 ---
 
@@ -69,23 +70,22 @@ La version en ligne est hébergée sur un dépôt GitLab privé et déployée au
 - Le **front** est une SPA React hébergée sur **Cloudflare Pages**, déployée automatiquement depuis un dépôt GitLab privé.
 - Le **back** est une API REST construite avec **Symfony**, hébergée sur **Alwaysdata**.
 - Les données CSV de l'INSEE sont importées et stockées en **MySQL**.
-- Le dossier `shared` contient les types et structures partagés entre le front et le back.
-- Le dossier `docker` permet de faire tourner l'application complète en local.
+- Le dossier `docker` permet de faire tourner l'application complète en local en une seule commande.
 
 ---
 
 ## Stack technique
 
-| Couche             | Technologie       |
-|--------------------|-------------------|
-| Frontend           | React / Vite      |
-| Backend            | PHP / Symfony     |
-| Base de données    | MySQL             |
-| Authentification   | JWT               |
-| Hébergement front  | Cloudflare Pages  |
-| Hébergement back   | Alwaysdata        |
+| Couche             | Technologie         |
+|--------------------|---------------------|
+| Frontend           | React / Vite        |
+| Backend            | PHP / Symfony       |
+| Base de données    | MySQL               |
+| Authentification   | JWT                 |
+| Hébergement front  | Cloudflare Pages    |
+| Hébergement back   | Alwaysdata          |
 | CI/CD front        | GitLab + Cloudflare |
-| Source des données | CSV INSEE         |
+| Source des données | CSV INSEE           |
 
 ---
 
@@ -94,7 +94,7 @@ La version en ligne est hébergée sur un dépôt GitLab privé et déployée au
 ### Avec Docker (recommandé)
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- C'est tout.
+- C'est tout. Docker gère PHP, MySQL et Node automatiquement.
 
 ### Sans Docker
 
@@ -116,7 +116,16 @@ cd docker
 docker compose up --build
 ```
 
-L'application sera accessible sur `http://localhost` après quelques minutes. Voir le [README Docker](docker/README.md) pour plus de détails.
+L'application sera accessible sur `http://localhost` après quelques minutes.
+
+Au premier démarrage, deux comptes sont créés automatiquement :
+
+| Rôle        | Email                    | Mot de passe    |
+|-------------|--------------------------|-----------------|
+| ADMIN       | admin@vision.fr          | admin1234       |
+| SUPER ADMIN | superadmin@vision.fr     | superadmin1234  |
+
+Voir le [README Docker](docker/README.md) pour plus de détails.
 
 ---
 
@@ -139,6 +148,7 @@ composer install
 
 # Copier et configurer le fichier d'environnement
 cp .env .env.local
+# Renseigne ta connexion MySQL (voir section Variables d'environnement)
 
 # Créer la base de données
 php bin/console doctrine:database:create
@@ -171,6 +181,39 @@ Le front sera accessible sur `http://localhost:5173`.
 
 ---
 
+## Créer des utilisateurs
+
+### Utilisateurs par défaut (fixtures)
+
+Pour charger rapidement deux comptes de test en base :
+
+```bash
+cd api
+php bin/console doctrine:fixtures:load
+```
+
+Cela crée les comptes suivants :
+
+| Rôle        | Email                | Mot de passe   |
+|-------------|----------------------|----------------|
+| ADMIN       | admin@vision.fr      | admin1234      |
+| SUPER ADMIN | superadmin@vision.fr | superadmin1234 |
+
+> Ces comptes sont destinés aux tests et à la démonstration. Pensez à les supprimer ou à changer les mots de passe en production.
+
+### Créer un utilisateur personnalisé
+
+Pour créer un utilisateur avec un email et un mot de passe au choix :
+
+```bash
+cd api
+php bin/console app:create-user
+```
+
+La commande vous guide interactivement pour choisir le rôle (ADMIN ou SUPER ADMIN), l'email, le prénom, le nom et le mot de passe.
+
+---
+
 ## Variables d'environnement
 
 ### Backend — `api/.env.local`
@@ -184,12 +227,6 @@ JWT_PASSPHRASE=ta_passphrase
 
 APP_ENV=dev
 APP_SECRET=ta_app_secret
-```
-
-### Frontend — `vue/.env.local`
-
-```env
-VITE_API_URL=http://localhost:8000
 ```
 
 ---
@@ -221,11 +258,11 @@ php bin/console cache:clear --env=prod
 
 ## Rôles et authentification
 
-| Rôle         | Accès                                         | Auth   |
-|--------------|-----------------------------------------------|--------|
-| Public       | Consultation des dashboards et visualisations | Aucune |
-| ADMIN        | Gestion des données, import CSV               | JWT    |
-| SUPER ADMIN  | Gestion des utilisateurs et configuration     | JWT    |
+| Rôle        | Accès                                         | Auth   |
+|-------------|-----------------------------------------------|--------|
+| Public      | Consultation des dashboards et visualisations | Aucune |
+| ADMIN       | Gestion des données, import CSV               | JWT    |
+| SUPER ADMIN | Gestion des utilisateurs et configuration     | JWT    |
 
 Les tokens JWT sont envoyés dans le header :
 
@@ -239,27 +276,30 @@ Authorization: Bearer <token>
 
 ```
 vision/
-├── api/                    # Backend Symfony (API REST)
+├── api/                        # Backend Symfony (API REST)
 │   ├── src/
-│   │   ├── Controller/     # Endpoints de l'API
-│   │   ├── Entity/         # Entités Doctrine (MySQL)
+│   │   ├── Command/            # Commandes CLI (app:create-user)
+│   │   ├── Controller/         # Endpoints de l'API
+│   │   ├── DataFixtures/       # Utilisateurs par défaut
+│   │   ├── Entity/             # Entités Doctrine (MySQL)
 │   │   └── ...
 │   ├── config/
 │   ├── migrations/
 │   └── ...
-├── vue/                    # Frontend React
+├── vue/                        # Frontend React
 │   ├── src/
-│   │   ├── components/     # Composants React
-│   │   ├── pages/          # Pages / routes
+│   │   ├── components/         # Composants React
+│   │   ├── pages/              # Pages / routes
+│   │   ├── services/           # Appels API (api.js, authService.js...)
 │   │   └── ...
 │   └── ...
-├── shared/                 # Types et structures partagés front/back
-├── docker/                 # Environnement Docker pour les tests locaux
+├── docker/                     # Environnement Docker local
 │   ├── Dockerfile
 │   ├── docker-compose.yml
+│   ├── entrypoint.sh
+│   ├── nginx.conf
+│   ├── supervisord.conf
 │   └── README.md
-├── .github/
-│   └── workflows/          # CI/CD GitHub Actions
 └── .gitignore
 ```
 
