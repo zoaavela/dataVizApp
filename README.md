@@ -18,25 +18,27 @@
 
 # 
 
-# \- \[À propos](#-à-propos)
+# \- \[À propos](#à-propos)
 
-# \- \[Fonctionnalités](#-fonctionnalités)
+# \- \[Fonctionnalités](#fonctionnalités)
 
-# \- \[Architecture](#-architecture)
+# \- \[Architecture](#architecture)
 
-# \- \[Stack technique](#-stack-technique)
+# \- \[Stack technique](#stack-technique)
 
-# \- \[Prérequis](#-prérequis)
+# \- \[Prérequis](#prérequis)
 
-# \- \[Installation locale](#-installation-locale)
+# \- \[Installation locale](#installation-locale)
 
-# \- \[Variables d'environnement](#-variables-denvironnement)
+# \- \[Variables d'environnement](#variables-denvironnement)
 
-# \- \[Déploiement en production](#-déploiement-en-production)
+# \- \[Déploiement en production](#déploiement-en-production)
 
-# \- \[Rôles \& authentification](#-rôles--authentification)
+# \- \[Rôles et authentification](#rôles-et-authentification)
 
-# \- \[Structure du projet](#-structure-du-projet)
+# \- \[Structure du projet](#structure-du-projet)
+
+# \- \[Données](#données)
 
 # 
 
@@ -48,7 +50,7 @@
 
 # 
 
-# \*\*Vizion\*\* est un dashboard web permettant d'explorer et de visualiser les données de l'INSEE relatives aux logements sociaux en France. Les données sont issues de fichiers CSV officiels et exposées via une API REST, puis affichées sous forme de graphiques et tableaux interactifs dans une interface Vue.js.
+# \*\*Vizion\*\* est un dashboard web permettant d'explorer et de visualiser les données de l'INSEE relatives aux logements sociaux en France. Les données sont issues de fichiers CSV officiels, stockées en base MySQL et exposées via une API REST Symfony. Le frontend Vue.js les restitue sous forme de graphiques et tableaux interactifs.
 
 # 
 
@@ -60,15 +62,15 @@
 
 # 
 
-# \- 📊 Visualisation de données INSEE sur les logements sociaux (graphiques, tableaux)
+# \- Visualisation de données INSEE sur les logements sociaux (graphiques, tableaux)
 
-# \- 📁 Lecture et traitement de fichiers CSV
+# \- Lecture et traitement de fichiers CSV
 
-# \- 🔍 Exploration et filtrage des données
+# \- Exploration et filtrage des données
 
-# \- 🔐 Gestion de rôles : accès public, ADMIN et SUPER ADMIN
+# \- Gestion de rôles : accès public, ADMIN et SUPER ADMIN avec authentification JWT
 
-# \- 🔄 CI/CD automatisé via GitHub Actions
+# \- CI/CD automatisé via GitHub Actions
 
 # 
 
@@ -82,55 +84,55 @@
 
 # ```
 
-# ┌──────────────────────────────────────────────────────┐
+# ┌─────────────────────────────────────┐
 
-# │                    UTILISATEUR                        │
+# │            UTILISATEUR              │
 
-# └───────────────────────┬──────────────────────────────┘
+# └──────────────────┬──────────────────┘
 
-# &#x20;                       │ HTTPS
+# &#x20;                  │ HTTPS
 
-# &#x20;         ┌─────────────▼──────────────┐
+# &#x20;    ┌─────────────▼─────────────┐
 
-# &#x20;         │      FRONT — Vue.js        │
+# &#x20;    │       FRONT — Vue.js      │
 
-# &#x20;         │   Hébergé sur GitHub Pages │
+# &#x20;    │    GitHub Pages           │
 
-# &#x20;         │   (déployé via Actions)    │
+# &#x20;    │  (déployé via Actions)    │
 
-# &#x20;         └─────────────┬──────────────┘
+# &#x20;    └─────────────┬─────────────┘
 
-# &#x20;                       │ REST API (JSON)
+# &#x20;                  │ REST API (JSON)
 
-# &#x20;         ┌─────────────▼──────────────┐
+# &#x20;    ┌─────────────▼─────────────┐
 
-# &#x20;         │      BACK — Symfony        │
+# &#x20;    │      BACK — Symfony       │
 
-# &#x20;         │   Hébergé sur Alwaysdata   │
+# &#x20;    │    Alwaysdata             │
 
-# &#x20;         │   PHP + MySQL              │
+# &#x20;    │    PHP + MySQL            │
 
-# &#x20;         └─────────────┬──────────────┘
+# &#x20;    └─────────────┬─────────────┘
 
-# &#x20;                       │
+# &#x20;                  │
 
-# &#x20;         ┌─────────────▼──────────────┐
+# &#x20;    ┌─────────────▼─────────────┐
 
-# &#x20;         │       Base de données      │
+# &#x20;    │      Base de données      │
 
-# &#x20;         │          MySQL             │
+# &#x20;    │         MySQL             │
 
-# &#x20;         │  (données issues des CSV)  │
+# &#x20;    │  (données issues des CSV) │
 
-# &#x20;         └────────────────────────────┘
+# &#x20;    └───────────────────────────┘
 
 # ```
 
 # 
 
-# \- Le \*\*front\*\* est une SPA Vue.js, buildée et déployée automatiquement sur \*\*GitHub Pages\*\* via un workflow GitHub Actions.
+# \- Le \*\*front\*\* est une SPA Vue.js buildée et déployée automatiquement sur \*\*GitHub Pages\*\* via GitHub Actions.
 
-# \- Le \*\*back\*\* est une API REST construite avec \*\*Symfony\*\*, hébergée sur \*\*Alwaysdata\*\*, configurée via SSH.
+# \- Le \*\*back\*\* est une API REST construite avec \*\*Symfony\*\*, hébergée sur \*\*Alwaysdata\*\* et configurée via SSH.
 
 # \- Les données CSV de l'INSEE sont importées et stockées en \*\*MySQL\*\*.
 
@@ -146,25 +148,25 @@
 
 # 
 
-# | Couche | Technologie |
+# | Couche             | Technologie    |
 
-# |---|---|
+# |--------------------|----------------|
 
-# | Frontend | React |
+# | Frontend           | Vue.js         |
 
-# | Backend | PHP — Symfony |
+# | Backend            | PHP / Symfony  |
 
-# | Base de données | MySQL |
+# | Base de données    | MySQL          |
 
-# | Authentification | JWT |
+# | Authentification   | JWT            |
 
-# | Hébergement front | GitHub Pages |
+# | Hébergement front  | GitHub Pages   |
 
-# | Hébergement back | Alwaysdata |
+# | Hébergement back   | Alwaysdata     |
 
-# | CI/CD | GitHub Actions |
+# | CI/CD              | GitHub Actions |
 
-# | Source des données | CSV INSEE |
+# | Source des données | CSV INSEE      |
 
 # 
 
@@ -180,9 +182,9 @@
 
 # 
 
-# \- \*\*Node.js\*\* ≥ 18 et \*\*npm\*\* ou \*\*yarn\*\*
+# \- \*\*Node.js\*\* >= 18 et \*\*npm\*\* ou \*\*yarn\*\*
 
-# \- \*\*PHP\*\* ≥ 8.1
+# \- \*\*PHP\*\* >= 8.1
 
 # \- \*\*Composer\*\*
 
@@ -216,10 +218,6 @@
 
 # 
 
-# \---
-
-# 
-
 # \### 2. Backend — Symfony (`/api`)
 
 # 
@@ -240,7 +238,7 @@
 
 # cp .env .env.local
 
-# \# → Renseigne ta connexion MySQL et ta clé JWT (voir section Variables d'environnement)
+# \# Renseigne ta connexion MySQL et ta clé JWT (voir section Variables d'environnement)
 
 # 
 
@@ -284,10 +282,6 @@
 
 # 
 
-# \---
-
-# 
-
 # \### 3. Frontend — Vue.js (`/vue`)
 
 # 
@@ -308,7 +302,7 @@
 
 # cp .env.example .env.local
 
-# \# → Renseigne l'URL de l'API (ex: http://localhost:8000)
+# \# Renseigne l'URL de l'API (ex: http://localhost:8000)
 
 # 
 
@@ -332,7 +326,7 @@
 
 # 
 
-# \### Backend (`api/.env.local`)
+# \### Backend — `api/.env.local`
 
 # 
 
@@ -362,7 +356,7 @@
 
 # 
 
-# \### Frontend (`vue/.env.local`)
+# \### Frontend — `vue/.env.local`
 
 # 
 
@@ -390,7 +384,7 @@
 
 # 
 
-# Aucune action manuelle requise — il suffit de pousser les modifications.
+# Aucune action manuelle n'est requise — il suffit de pousser les modifications.
 
 # 
 
@@ -432,23 +426,31 @@
 
 # 
 
-# \## Rôles \& authentification
+# \## Rôles et authentification
 
 # 
 
-# | Rôle | Accès | Auth |
+# | Rôle         | Accès                                          | Auth    |
 
-# |---|---|---|
+# |--------------|------------------------------------------------|---------|
 
-# | \*\*Public\*\* | Consultation des dashboards et visualisations | Aucune |
+# | Public       | Consultation des dashboards et visualisations  | Aucune  |
 
-# | \*\*ADMIN\*\* | Gestion des données, import CSV | JWT |
+# | ADMIN        | Gestion des données, import CSV                | JWT     |
 
-# | \*\*SUPER ADMIN\*\* | Gestion des utilisateurs et configuration | JWT |
+# | SUPER ADMIN  | Gestion des utilisateurs et configuration      | JWT     |
 
 # 
 
-# Les tokens JWT sont générés à la connexion et doivent être envoyés dans le header `Authorization: Bearer <token>` pour les routes protégées.
+# Les tokens JWT sont générés à la connexion et doivent être envoyés dans le header HTTP suivant pour les routes protégées :
+
+# 
+
+# ```
+
+# Authorization: Bearer <token>
+
+# ```
 
 # 
 
@@ -464,13 +466,13 @@
 
 # vision/
 
-# ├── api/                  # Backend Symfony (API REST)
+# ├── api/                    # Backend Symfony (API REST)
 
 # │   ├── src/
 
-# │   │   ├── Controller/   # Endpoints de l'API
+# │   │   ├── Controller/     # Endpoints de l'API
 
-# │   │   ├── Entity/       # Entités Doctrine (MySQL)
+# │   │   ├── Entity/         # Entités Doctrine (MySQL)
 
 # │   │   └── ...
 
@@ -480,23 +482,23 @@
 
 # │   └── ...
 
-# ├── vue/                  # Frontend Vue.js
+# ├── vue/                    # Frontend Vue.js
 
 # │   ├── src/
 
-# │   │   ├── components/   # Composants Vue
+# │   │   ├── components/     # Composants Vue
 
-# │   │   ├── views/        # Pages / routes
+# │   │   ├── views/          # Pages / routes
 
 # │   │   └── ...
 
 # │   └── ...
 
-# ├── shared/               # Diagrammes / Gestion de Projet
+# ├── shared/                 # Types et structures partagés front/back
 
 # ├── .github/
 
-# │   └── workflows/        # CI/CD GitHub Actions
+# │   └── workflows/          # CI/CD GitHub Actions
 
 # └── .gitignore
 
