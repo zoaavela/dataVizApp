@@ -1,8 +1,8 @@
-# Vizion — Dashboard INSEE Logements Sociaux
+# Vision — Dashboard INSEE Logements Sociaux
 
 > Visualisation interactive des données INSEE sur les logements sociaux en France.
 
-**Application en ligne** : [vizion.ct.ws](https://vizion.ct.ws/)
+**Application en ligne** : [v1sion.pages.dev](https://v1sion.pages.dev)
 
 ---
 
@@ -24,7 +24,9 @@
 
 ## À propos
 
-**Vizion** est un dashboard web permettant d'explorer et de visualiser les données de l'INSEE relatives aux logements sociaux en France. Les données sont issues de fichiers CSV officiels, stockées en base MySQL et exposées via une API REST Symfony. Le frontend Vue.js les restitue sous forme de graphiques et tableaux interactifs.
+**Vision** est un dashboard web permettant d'explorer et de visualiser les données de l'INSEE relatives aux logements sociaux en France. Les données sont issues de fichiers CSV officiels, stockées en base MySQL et exposées via une API REST Symfony. Le frontend React les restitue sous forme de graphiques et tableaux interactifs.
+
+La version en ligne est hébergée sur un dépôt GitLab privé et déployée automatiquement via **Cloudflare Pages**.
 
 ---
 
@@ -34,7 +36,7 @@
 - Lecture et traitement de fichiers CSV
 - Exploration et filtrage des données
 - Gestion de rôles : accès public, ADMIN et SUPER ADMIN avec authentification JWT
-- CI/CD automatisé via GitHub Actions
+- Environnement Docker pour tester l'application en local
 
 ---
 
@@ -46,52 +48,58 @@
 └──────────────────┬──────────────────┘
                    │ HTTPS
      ┌─────────────▼─────────────┐
-     │       FRONT — Vue.js      │
-     │    GitHub Pages           │
-     │  (déployé via Actions)    │
+     │      FRONT — React        │
+     │    Cloudflare Pages       │
+     │  (dépôt GitLab privé)     │
      └─────────────┬─────────────┘
                    │ REST API (JSON)
      ┌─────────────▼─────────────┐
      │      BACK — Symfony       │
-     │    Alwaysdata             │
-     │    PHP + MySQL            │
+     │       Alwaysdata          │
+     │       PHP + MySQL         │
      └─────────────┬─────────────┘
                    │
      ┌─────────────▼─────────────┐
      │      Base de données      │
-     │         MySQL             │
+     │          MySQL            │
      │  (données issues des CSV) │
      └───────────────────────────┘
 ```
 
-- Le **front** est une SPA Vue.js buildée et déployée automatiquement sur **GitHub Pages** via GitHub Actions.
-- Le **back** est une API REST construite avec **Symfony**, hébergée sur **Alwaysdata** et configurée via SSH.
+- Le **front** est une SPA React hébergée sur **Cloudflare Pages**, déployée automatiquement depuis un dépôt GitLab privé.
+- Le **back** est une API REST construite avec **Symfony**, hébergée sur **Alwaysdata**.
 - Les données CSV de l'INSEE sont importées et stockées en **MySQL**.
 - Le dossier `shared` contient les types et structures partagés entre le front et le back.
+- Le dossier `docker` permet de faire tourner l'application complète en local.
 
 ---
 
 ## Stack technique
 
-| Couche             | Technologie    |
-|--------------------|----------------|
-| Frontend           | Vue.js         |
-| Backend            | PHP / Symfony  |
-| Base de données    | MySQL          |
-| Authentification   | JWT            |
-| Hébergement front  | GitHub Pages   |
-| Hébergement back   | Alwaysdata     |
-| CI/CD              | GitHub Actions |
-| Source des données | CSV INSEE      |
+| Couche             | Technologie       |
+|--------------------|-------------------|
+| Frontend           | React / Vite      |
+| Backend            | PHP / Symfony     |
+| Base de données    | MySQL             |
+| Authentification   | JWT               |
+| Hébergement front  | Cloudflare Pages  |
+| Hébergement back   | Alwaysdata        |
+| CI/CD front        | GitLab + Cloudflare |
+| Source des données | CSV INSEE         |
 
 ---
 
 ## Prérequis
 
-Avant d'installer le projet en local, assure-toi d'avoir :
+### Avec Docker (recommandé)
 
-- **Node.js** >= 18 et **npm** ou **yarn**
-- **PHP** >= 8.1
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- C'est tout.
+
+### Sans Docker
+
+- **Node.js** >= 18 et **npm**
+- **PHP** >= 8.4
 - **Composer**
 - **MySQL** (ou MariaDB)
 - **Symfony CLI** *(optionnel mais recommandé)*
@@ -101,14 +109,27 @@ Avant d'installer le projet en local, assure-toi d'avoir :
 
 ## Installation locale
 
-### 1. Cloner le dépôt
+### Méthode rapide — Docker
+
+```bash
+cd docker
+docker compose up --build
+```
+
+L'application sera accessible sur `http://localhost` après quelques minutes. Voir le [README Docker](docker/README.md) pour plus de détails.
+
+---
+
+### Méthode manuelle
+
+#### 1. Cloner le dépôt
 
 ```bash
 git clone https://github.com/zoaavela/vision.git
 cd vision
 ```
 
-### 2. Backend — Symfony (`/api`)
+#### 2. Backend — Symfony (`/api`)
 
 ```bash
 cd api
@@ -118,7 +139,6 @@ composer install
 
 # Copier et configurer le fichier d'environnement
 cp .env .env.local
-# Renseigne ta connexion MySQL et ta clé JWT (voir section Variables d'environnement)
 
 # Créer la base de données
 php bin/console doctrine:database:create
@@ -129,18 +149,13 @@ php bin/console doctrine:migrations:migrate
 # Générer les clés JWT
 php bin/console lexik:jwt:generate-keypair
 
-# (Optionnel) Importer les données CSV
-php bin/console app:import-csv
-
 # Lancer le serveur Symfony
 symfony server:start
-# ou sans Symfony CLI :
-php -S localhost:8000 -t public/
 ```
 
 L'API sera accessible sur `http://localhost:8000`.
 
-### 3. Frontend — Vue.js (`/vue`)
+#### 3. Frontend — React (`/vue`)
 
 ```bash
 cd ../vue
@@ -148,15 +163,11 @@ cd ../vue
 # Installer les dépendances
 npm install
 
-# Copier et configurer le fichier d'environnement
-cp .env.example .env.local
-# Renseigne l'URL de l'API (ex: http://localhost:8000)
-
 # Lancer le serveur de développement
 npm run dev
 ```
 
-Le front sera accessible sur `http://localhost:5173` (ou le port affiché dans le terminal).
+Le front sera accessible sur `http://localhost:5173`.
 
 ---
 
@@ -165,10 +176,8 @@ Le front sera accessible sur `http://localhost:5173` (ou le port affiché dans l
 ### Backend — `api/.env.local`
 
 ```env
-# Base de données
-DATABASE_URL="mysql://utilisateur:motdepasse@127.0.0.1:3306/vizion"
+DATABASE_URL="mysql://utilisateur:motdepasse@127.0.0.1:3306/vision"
 
-# JWT
 JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem
 JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem
 JWT_PASSPHRASE=ta_passphrase
@@ -187,15 +196,15 @@ VITE_API_URL=http://localhost:8000
 
 ## Déploiement en production
 
-### Frontend — GitHub Pages
+### Frontend — Cloudflare Pages
 
-Le front est déployé automatiquement via **GitHub Actions** à chaque push sur la branche `main`. Le workflow build le projet Vue.js et publie le résultat sur GitHub Pages.
+Le front est hébergé sur un **dépôt GitLab privé** et déployé automatiquement sur **Cloudflare Pages** à chaque push sur la branche `main`.
 
-Aucune action manuelle n'est requise — il suffit de pousser les modifications.
+URL de production : [v1sion.pages.dev](https://v1sion.pages.dev)
 
 ### Backend — Alwaysdata
 
-Le backend Symfony est hébergé sur **Alwaysdata**. La configuration et les mises à jour se font via **SSH** :
+Le backend Symfony est hébergé sur **Alwaysdata**. Les mises à jour se font via SSH :
 
 ```bash
 ssh utilisateur@ssh-utilisateur.alwaysdata.net
@@ -208,19 +217,17 @@ php bin/console doctrine:migrations:migrate --no-interaction
 php bin/console cache:clear --env=prod
 ```
 
-> La base MySQL est gérée depuis le panel Alwaysdata ou via le client MySQL en SSH.
-
 ---
 
 ## Rôles et authentification
 
-| Rôle         | Accès                                          | Auth    |
-|--------------|------------------------------------------------|---------|
-| Public       | Consultation des dashboards et visualisations  | Aucune  |
-| ADMIN        | Gestion des données, import CSV                | JWT     |
-| SUPER ADMIN  | Gestion des utilisateurs et configuration      | JWT     |
+| Rôle         | Accès                                         | Auth   |
+|--------------|-----------------------------------------------|--------|
+| Public       | Consultation des dashboards et visualisations | Aucune |
+| ADMIN        | Gestion des données, import CSV               | JWT    |
+| SUPER ADMIN  | Gestion des utilisateurs et configuration     | JWT    |
 
-Les tokens JWT sont générés à la connexion et doivent être envoyés dans le header HTTP suivant pour les routes protégées :
+Les tokens JWT sont envoyés dans le header :
 
 ```
 Authorization: Bearer <token>
@@ -240,13 +247,17 @@ vision/
 │   ├── config/
 │   ├── migrations/
 │   └── ...
-├── vue/                    # Frontend Vue.js
+├── vue/                    # Frontend React
 │   ├── src/
-│   │   ├── components/     # Composants Vue
-│   │   ├── views/          # Pages / routes
+│   │   ├── components/     # Composants React
+│   │   ├── pages/          # Pages / routes
 │   │   └── ...
 │   └── ...
 ├── shared/                 # Types et structures partagés front/back
+├── docker/                 # Environnement Docker pour les tests locaux
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   └── README.md
 ├── .github/
 │   └── workflows/          # CI/CD GitHub Actions
 └── .gitignore
