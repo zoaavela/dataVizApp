@@ -1,6 +1,5 @@
 graph LR
-    User((User)) --> Login[SAS de Login]
-    Login --> Dashboard{Dashboard Principal}
+    Guest((Invité)) --> Dashboard{Dashboard Principal}
     
     subgraph "Visualisation de Données"
         Dashboard --> M1[M1: Attractivité & Soldes]
@@ -15,7 +14,16 @@ graph LR
         M1 & M2 & M3 & M4 & M5 --> Filter[Filtre Régional/Départemental]
     end
 
-    Dashboard -.-> Admin[Import CSV Optionnel]
+    Dashboard -.-> Login[SAS de Login]
+    Login --> Admin((Admin))
+    Login --> SuperAdmin((Super Admin))
+
+    subgraph "Administration"
+        Admin --> ImportCSV[Import CSV]
+        SuperAdmin --> ImportCSV
+        SuperAdmin --> ManageAdmins[Gestion des Admins]
+    end
     
     style Dashboard fill:#f9f,stroke:#333
-    style Admin stroke-dasharray: 5 5
+    style ImportCSV stroke-dasharray: 5 5
+    style ManageAdmins stroke-dasharray: 5 5
