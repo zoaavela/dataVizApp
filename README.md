@@ -3,6 +3,11 @@
 > Visualisation interactive des données INSEE sur les logements sociaux en France.
 
 **Application en ligne** : [v1sion.pages.dev](https://v1sion.pages.dev)
+**Wiki Documentaire** : [vizion.ct.ws](https://vizion.ct.ws/)
+
+| Username (WIKI)            | Mot de passe    |
+|----------------------------|-----------------|
+| user1                      | wiki12345       |
 
 ---
 
